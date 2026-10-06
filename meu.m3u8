@@ -1,0 +1,141 @@
+#EXTM3U
+
+# ========================= LIVE TV =========================
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://i.imgur.com/qqhdkym.png" group-title="LIVRE",Band1
+https://cdn-1.nxplay.com.br/BAND_HD_PFZ_NX/index.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="" group-title="LIVRE",Fonte TV
+http://flash.softhost.com.br:1935/fonte/fontetv/live.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="" group-title="LIVRE",TV ALMG
+https://streaming.almg.gov.br/live/tvalmg.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="" group-title="LIVRE",REDE MINAS
+http://wz4.dnip.com.br/fratevitv/fratevitv.sdp/playlist.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://i.imgur.com/qqhdkym.png" group-title="LIVRE",Cultura PR 1
+https://5b33b873179a2.streamlock.net:1443/live/livestream/chunklist_w1960464540.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://i.imgur.com/qqhdkym.png" group-title="LIVRE",Cultura PR 2
+https://cdn.jmvstream.com/w/LVW-9375/LVW9375_6i0wPBCHYc/playlist.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://i.imgur.com/qqhdkym.png" group-title="LIVRE",TV Câmara
+https://stream3.camara.gov.br/tv1/manifest.m3u8
+
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://i.imgur.com/c8ztQnF.png" group-title="LIVRE",COM Brasil
+https://br5093.streamingdevideo.com.br/abc/abc/playlist.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/c/ce/Canal_Futura_2022.svg" group-title="LIVRE",Futura
+http://168.197.104.22/FUTURA/index.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/4/46/Record_News_logo_2023.svg" group-title="LIVRE",Record News
+https://rnw-rn.otteravision.com/rnw/rn/rnw_rn.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://upload.wikimedia.org/wikipedia/pt/b/b5/Logotipo_da_ISTV.png" group-title="LIVRE",ISTV
+https://video08.logicahost.com.br/istvnacional/srt.stream/istvnacional.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/d/d1/Marca_rede_brasil_rgb-color.png" group-title="LIVRE",Rede Brasil
+https://video09.logicahost.com.br/redebrasiloficial/redebrasiloficial/playlist.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://i.imgur.com/UpV2PRk.png" group-title="LIVRE",TV Câmara
+https://stream3.camara.gov.br/tv1/manifest.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/c/c2/Logotipo_da_TVE_RS.png" group-title="LIVRE",TVE RS
+http://streaming.procergs.com.br:1935/tve/stve/playlist.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/8/82/Cultura_logo_2013.svg" group-title="LIVRE",TV Cultura
+https://player-tvcultura.stream.uol.com.br/live/tvcultura.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://imgur.com/Ea5KBfh.png" group-title="Cinema",TV CLUBE WEB
+https://5c483b9d1019c.streamlock.net/8186/8186/playlist.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://listaiptv.gratis/logos/imagens/gospel.jpg" group-title="Cinema",Gospel Movie TV
+https://stmv1.srvif.com/gospelf/gospelf/playlist.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://listaiptv.gratis/logos/imagens/cinekuriakos.png" group-title="Cinema",PT KURIAKOS CINE
+https://w2.manasat.com/kcine/smil:kcine.smil/playlist.m3u8
+
+#EXTINF:-1 tvg-type="live" tvg-id="" tvg-logo="https://provider-static.plex.tv/epg/images/ott_channels/logos/runtime-espanol.png" group-title="Espanhol",Filmes Runtime | Plex
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=2154
+
+
+# ========================= VOD - FILMES =========================
+
+#EXTINF:-1 tvg-type="movie" tvg-id="" tvg-logo="" group-title="Filmes",Valdez O Mestiço (1973)
+http://primewhatch.com:80/movie/739175103/T696K8261Y/313030.mp4
+
+#EXTINF:-1 tvg-type="movie" tvg-id="" tvg-logo="https://img.hotimg.com/0000.png" group-title="Filmes",Contato
+https://embed-ssl.wistia.com/deliveries/886dd6c9b97c52acaf8752d69977a6d401b6b28b.bin?disposition=attachment&filename=Contato.mp4
+
+#EXTINF:-1 tvg-type="movie" tvg-id="" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/lcq8dVxeeOqHvvgcte707K0KVx5.jpg" group-title="Filmes", Homem-Aranha: Longe de Casa
+https://content.jwplatform.com/videos/3wq63IfT-xgRnbv6R.mp4
+
+#EXTINF:-1 tvg-type="movie" tvg-id="" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg" group-title="Filmes", Homem-Aranha: No Verso da Aranha
+https://content.jwplatform.com/videos/7dbE3mnl-O9stsNuF.mp4
+
+#EXTINF:-1 tvg-type="movie" tvg-id="" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/dPrUPFcgLfNbmDL8V69vcrTyEfb.jpg" group-title="Filmes", MIB: Homens de Preto - Internacional
+https://content.jwplatform.com/videos/S8EndjpQ-tQdYKkc5.mp4
+
+#EXTINF:-1 tvg-type="movie" tvg-id="" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/3iYQTLGoy7QnjcUYRJy4YrAgGvp.jpg" group-title="Filmes", Aladdin(2019)
+https://content.jwplatform.com/videos/W3rhmZmh-tQdYKkc5.mp4
+
+#EXTINF:-1 tvg-type="movie" tvg-id="" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/bk8LyaMqUtaQ9hUShuvFznQYQKR.jpg" group-title="Filmes", Hellboy
+https://content.jwplatform.com/videos/W7rRSbXM-tQdYKkc5.mp4
+
+#EXTINF:-1 tvg-type="movie" tvg-id="" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/xRWht48C2V8XNfzvPehyClOvDni.jpg" group-title="Filmes", Alita: Anjo de Batalha
+https://content.jwplatform.com/videos/AhRKodlt-O9stsNuF.mp4
+
+#EXTINF:-1 tvg-type="movie" tvg-id="" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/fw02ONlDhrYjTSZV8XO6hhU3ds3.jpg" group-title="Filmes", Bumblebee
+https://content.jwplatform.com/videos/VRXI8Jxy-O9stsNuF.mp4
+
+#EXTINF:-1 tvg-type="movie" tvg-id="" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/fw02ONlDhrYjTSZV8XO6hhU3ds3.jpg" group-title="Filmes", Bumblebee
+https://content.jwplatform.com/videos/VRXI8Jxy-O9stsNuF.mp4
+
+#EXTINF:0 tvg-type="movie" tvg-id="" tvg-logo="http://i.imgur.com/qcRJkNI.jpg" group-title="Filmes", AMOR.COM - DUB
+https://ia601504.us.archive.org/32/items/luaAmor/luaAmor.MP4
+
+#EXTINF:0 tvg-type="movie" tvg-id="" tvg-logo="http://i.imgur.com/y9LAh3B.jpg" group-title="Filmes", Eu Fico Loko
+https://ia601504.us.archive.org/21/items/luaEuFicoLoko/luaEuFicoLoko.MP4
+
+#EXTINF:-1 tvg-type="movie" tvg-id="" tvg-logo="https://i.imgur.com/wqdEmrw.jpg" group-title="Filmes" ,OS PARÇAS - HDTS - 2017
+https://ia601506.us.archive.org/4/items/osparcas-TS/osparcas-TS.MP4
+
+#EXTINF:-1 tvg-type="movie" tvg-id="" tvg-logo="http://i.imgur.com/Emkp2o1.jpg" group-title="Filmes", Sahara
+https://ia601500.us.archive.org/35/items/luaSaara/luaSaara.MP4
+
+#EXTINF:-1 tvg-id="" tvg-name="" tvg-logo="" group-title="Filmes", SORRIA
+https://drive.usercontent.google.com/download?id=1gFmv1f3EE0xDSUydXM5ARKdRqh7tIZRc&export=download&confirm=t
+
+#EXTINF:-1 tvg-id="" tvg-name="" tvg-logo="" group-title="Filmes",Homem-Aranha: Um Novo Dia
+https://drive.usercontent.google.com/download?id=1MxyQxiA-D9b05veRUhk83uTt_Hg26Yqy&export=download&confirm=t
+
+#EXTINF:-1 tvg-id="" tvg-name="" tvg-logo="" group-title="Filmes",CENTRAL DO BRASIL 
+https://drive.usercontent.google.com/download?id=1dW1Uuwy9Zlc1iTLOQi4GQdXaVpt1FTD5&export=download&confirm=t
+
+#EXTINF:-1 tvg-id="" tvg-name="Pânico no Lago 1" tvg-logo="" group-title="Filmes | Pânico",Pânico no Lago 1
+https://drive.usercontent.google.com/download?id=12cRCx4oGSA6uJztCikEuV1G3m-_6ITM_&export=download&confirm=t
+
+#EXTINF:-1 tvg-id="" tvg-name="" tvg-logo="" group-title="Filmes | Pânico", Pânico no Lago 2
+https://drive.usercontent.google.com/download?id=1IN867w7t15d3PtiAsjt2MH-YXskPtWg2&export=download&confirm=t
+
+#EXTINF:-1 tvg-id="" tvg-name="" tvg-logo="" group-title="Filmes | Pânico", Pânico no Lago 3
+https://drive.usercontent.google.com/download?id=1MKH_DmfV-Z2LHHq7vaonfed2i5Pj6caG&export=download&confirm=t
+
+#EXTINF:-1 tvg-id="" tvg-name="" tvg-logo="" group-title="Filmes | Pânico", Pânico no Lago 4
+https://drive.usercontent.google.com/download?id=1uJgFDsvHjO2gyRcanSJz9uo4LREQui7c&export=download&confirm=t
+
+#EXTINF:-1 tvg-id="" tvg-name="" tvg-logo="" group-title="Filmes | Pânico", Pânico no Lago 5
+https://drive.usercontent.google.com/download?id=1KnjkZWVO-lkcp-cn3l6L8i3FlHlFTFOR&export=download&confirm=t
+
+#EXTINF:-1 tvg-id="" tvg-name="" tvg-logo="" group-title="Filmes | Pânico", Pânico no Lago 6
+https://drive.usercontent.google.com/download?id=1h3XhcLD1161M68qHldNH4yVnKeQz4TNg&export=download&confirm=t
+
+# ========================= SERIES =========================
+
+#EXTINF:-1 tvg-type="series" tvg-logo="https://img.hotimg.com/0000.png" group-title="Séries",Contato - S01E01
+https://embed-ssl.wistia.com/deliveries/886dd6c9b97c52acaf8752d69977a6d401b6b28b.bin?disposition=attachment&filename=Contato.mp4
+
+#EXTINF:-1 tvg-type="series" tvg-logo="https://img.hotimg.com/0000.png" group-title="Séries",S.R.R.2.2024
+https://drive.usercontent.google.com/download?id=1gFmv1f3EE0xDSUydXM5ARKdRqh7tIZRc&export=download&confirm=t

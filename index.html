@@ -147,6 +147,9 @@ body.tarja-recolhida>header>#botaoTarja:focus{opacity:1}
 <script>
 const tarja = document.querySelector("header");
 const navegacaoCanais = document.getElementById("navegacaoCanais");
+// Referências explícitas aos botões: evita erro de JavaScript antes de habilitar o seletor de arquivo.
+const botaoCanalAnterior = document.getElementById("canalAnterior");
+const botaoProximoCanal = document.getElementById("proximoCanal");
 function atualizarBotoesNavegacao(){botaoCanalAnterior.disabled=botaoProximoCanal.disabled=videos.length<=1;}
 function navegarCanal(direcao){
   if(!videos.length)return;
@@ -167,7 +170,10 @@ function preencherSelect(select,valores){
   });
   select.value="";
 }
-function mostrarGrupo(nome,mostrar){grupos[nome].hidden=!mostrar;}
+function mostrarGrupo(nome,mostrar){
+  const elemento=document.getElementById("grupo"+nome);
+  if(elemento) elemento.hidden=!mostrar;
+}
 function limparAbaixo(nivel){
   if(nivel<=1){menuB2.value="";mostrarGrupo("B2",false);}
   if(nivel<=2){menuC3.value="";mostrarGrupo("C3",false);}

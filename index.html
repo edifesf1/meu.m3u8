@@ -145,6 +145,50 @@ body.tarja-recolhida>header>#botaoTarja:focus{opacity:1}
 </main>
 
 <script>
+// Estado e elementos usados pelo player e pelos filtros.
+let todosVideos = [];
+let videos = [];
+let selecionado = 0;
+let hlsInstance = null;
+let ytPlayerApi = null;
+let player = null;
+let geracaoPlayer = 0;
+let modoPesquisa = false;
+const menuA1 = document.getElementById("menuA1");
+const menuB2 = document.getElementById("menuB2");
+const menuC3 = document.getElementById("menuC3");
+const menuD4 = document.getElementById("menuD4");
+const campoPesquisa = document.getElementById("campoPesquisa");
+const lista = document.getElementById("lista");
+const status = document.getElementById("status");
+
+// Carrega a API oficial do YouTube somente quando um vídeo do YouTube for escolhido.
+let promessaAPIYouTube = null;
+function carregarYouTubeAPI(){
+  if (window.YT && window.YT.Player) return Promise.resolve();
+  if (promessaAPIYouTube) return promessaAPIYouTube;
+  promessaAPIYouTube = new Promise((resolve, reject) => {
+    const anterior = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      if (typeof anterior === "function") { try { anterior(); } catch(e) {} }
+      resolve();
+    };
+    let script = document.querySelector('script[data-youtube-iframe-api="1"]');
+    if (!script) {
+      script = document.createElement("script");
+      script.src = "https://www.youtube.com/iframe_api";
+      script.async = true;
+      script.dataset.youtubeIframeApi = "1";
+      script.onerror = () => reject(new Error("Não foi possível carregar a API do YouTube. Verifique a conexão com a internet."));
+      document.head.appendChild(script);
+    }
+  });
+  return promessaAPIYouTube;
+}
+function registrarFalha(item, tipo, mensagem, codigo){
+  console.warn("Falha de reprodução:", {titulo:item?.titulo, tipo, mensagem, codigo});
+}
+
 const tarja = document.querySelector("header");
 const navegacaoCanais = document.getElementById("navegacaoCanais");
 // Referências explícitas aos botões: evita erro de JavaScript antes de habilitar o seletor de arquivo.

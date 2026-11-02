@@ -112,22 +112,15 @@ body.tarja-recolhida>header>#botaoTarja:focus{opacity:1}
   <nav id="cascadeBar" aria-label="Filtros">
     <div class="cascade-group" id="grupoA1"><label for="menuA1">Tema</label><select id="menuA1" title="Tema" aria-label="Tema"><option value=""></option></select></div>
     <div class="cascade-group" id="grupoB2" hidden>
-  <label for="menuB2">Categoria ou pesquisa</label>
-  <select id="menuB2" title="Categoria" aria-label="Categoria">
-    <option value=""></option>
-  </select>
-  <input id="campoPesquisa" type="search"
-    placeholder="Pesquisar conteúdo..."
-    aria-label="Pesquisar canais, filmes, séries e músicas"
-    style="display:none;width:100%;min-width:100px;padding:9px 8px;border-radius:5px;border:1px solid white;background:#a90000;color:white;font-size:14px">
-</div>
-
-<div class="cascade-group" id="grupoC3" hidden>
-  <label for="menuC3">Resultados</label>
-  <select id="menuC3" title="Resultados" aria-label="Resultados">
-    <option value=""></option>
-  </select>
-</div>
+      <label for="menuB2">Categoria ou pesquisa</label>
+      <select id="menuB2" title="Categoria" aria-label="Categoria"><option value=""></option></select>
+      <input id="campoPesquisa" type="search" placeholder="Pesquisar conteúdo..." aria-label="Pesquisar canais, filmes, séries e músicas"
+        style="display:none;width:100%;min-width:100px;padding:9px 8px;border-radius:5px;border:1px solid white;background:#a90000;color:white;font-size:14px">
+    </div>
+    <div class="cascade-group" id="grupoC3" hidden>
+      <label for="menuC3">Resultados</label>
+      <select id="menuC3" title="Resultados" aria-label="Resultados"><option value=""></option></select>
+    </div>
     <div class="cascade-group" id="grupoD4" hidden><label for="menuD4">Episódio</label><select id="menuD4" title="Episódio" aria-label="Episódio"><option value=""></option></select></div>
   </nav>
   <div id="navegacaoCanais" aria-label="Navegação entre canais">
@@ -145,7 +138,6 @@ body.tarja-recolhida>header>#botaoTarja:focus{opacity:1}
 </main>
 
 <script>
-// Estado e elementos usados pelo player e pelos filtros.
 let todosVideos = [];
 let videos = [];
 let selecionado = 0;
@@ -162,14 +154,15 @@ const campoPesquisa = document.getElementById("campoPesquisa");
 const lista = document.getElementById("lista");
 const status = document.getElementById("status");
 
-// Carrega a API oficial do YouTube somente quando um vídeo do YouTube for escolhido.
 let promessaAPIYouTube = null;
 function carregarYouTubeAPI(){
   if (window.YT && window.YT.Player) return Promise.resolve();
   if (promessaAPIYouTube) return promessaAPIYouTube;
   promessaAPIYouTube = new Promise((resolve, reject) => {
     const anterior = window.onYouTubeIframeAPIReady;
+    const timeout=setTimeout(()=>reject(new Error("Tempo esgotado ao carregar a API do YouTube.")),15000);
     window.onYouTubeIframeAPIReady = () => {
+      clearTimeout(timeout);
       if (typeof anterior === "function") { try { anterior(); } catch(e) {} }
       resolve();
     };
@@ -179,7 +172,7 @@ function carregarYouTubeAPI(){
       script.src = "https://www.youtube.com/iframe_api";
       script.async = true;
       script.dataset.youtubeIframeApi = "1";
-      script.onerror = () => reject(new Error("Não foi possível carregar a API do YouTube. Verifique a conexão com a internet."));
+      script.onerror = () => {clearTimeout(timeout);reject(new Error("Não foi possível carregar a API do YouTube. Verifique a conexão com a internet."));};
       document.head.appendChild(script);
     }
   });
@@ -190,10 +183,19 @@ function registrarFalha(item, tipo, mensagem, codigo){
 }
 
 const tarja = document.querySelector("header");
-const navegacaoCanais = document.getElementById("navegacaoCanais");
-// Referências explícitas aos botões: evita erro de JavaScript antes de habilitar o seletor de arquivo.
 const botaoCanalAnterior = document.getElementById("canalAnterior");
 const botaoProximoCanal = document.getElementById("proximoCanal");
+const botaoTarja = document.getElementById("botaoTarja");
+
+function alternarTarja(){
+  const recolhida=document.body.classList.toggle("tarja-recolhida");
+  botaoTarja.textContent=recolhida?"☰":"▁";
+  botaoTarja.title=recolhida?"Mostrar tarja":"Recolher tarja";
+  botaoTarja.setAttribute("aria-label",botaoTarja.title);
+  botaoTarja.setAttribute("aria-pressed",String(recolhida));
+}
+botaoTarja.addEventListener("click",alternarTarja);
+
 function atualizarBotoesNavegacao(){botaoCanalAnterior.disabled=botaoProximoCanal.disabled=videos.length<=1;}
 function navegarCanal(direcao){
   if(!videos.length)return;
@@ -216,21 +218,25 @@ function preencherSelect(select,valores){
 }
 function mostrarGrupo(nome,mostrar){
   const elemento=document.getElementById("grupo"+nome);
-  if(elemento) elemento.hidden=!mostrar;
+  if(elemento)elemento.hidden=!mostrar;
 }
 function limparAbaixo(nivel){
   if(nivel<=1){menuB2.value="";mostrarGrupo("B2",false);}
   if(nivel<=2){menuC3.value="";mostrarGrupo("C3",false);}
   if(nivel<=3){menuD4.value="";mostrarGrupo("D4",false);}
 }
+function destruirPlayerAtual(){
+  geracaoPlayer++;
+  if(hlsInstance){try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
+  if(ytPlayerApi){try{ytPlayerApi.destroy();}catch(e){}ytPlayerApi=null;}
+  document.getElementById("player").replaceChildren();
+  player=null;
+}
 function aplicarFiltros(){
   const tema=menuA1.value,categoria=menuB2.value,classificacao=menuC3.value,episodio=menuD4.value;
   videos=todosVideos.filter(v=>(!tema||v.tema===tema)&&(!categoria||v.categoria===categoria)&&(!classificacao||v.classificacao===classificacao));
   lista.replaceChildren();
-  const area=document.getElementById("player");
-  if(hlsInstance){try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
-  if(ytPlayerApi){try{ytPlayerApi.destroy();}catch(e){}ytPlayerApi=null;}
-  area.replaceChildren();player=null;
+  destruirPlayerAtual();
   if(!videos.length){atualizarBotoesNavegacao();status.textContent=tema?"Nenhum vídeo nesta seleção.":"Selecione os menus acima.";return;}
   videos.forEach((video,index)=>{
     const botao=document.createElement("button");botao.textContent=`${index+1}. ${video.titulo}`;
@@ -240,19 +246,14 @@ function aplicarFiltros(){
   if(selecionado<0)selecionado=0;
   atualizarBotoesNavegacao();
   status.textContent=`${videos.length} vídeo(s).`;
-  if(episodio||!player)criarPlayer();
+  criarPlayer();
 }
 menuA1.addEventListener("change",()=>{
   limparAbaixo(1);const tema=menuA1.value;
-  if (tema === "Pesquisa") {
-  ativarPesquisa(true);
-  videos = [];
-  atualizarBotoesNavegacao();
-  document.getElementById("player").replaceChildren();
-  return;
-}
-
-ativarPesquisa(false);
+  if(tema==="Pesquisa"){
+    ativarPesquisa(true);videos=[];atualizarBotoesNavegacao();destruirPlayerAtual();return;
+  }
+  ativarPesquisa(false);
   if(tema){preencherSelect(menuB2,todosVideos.filter(v=>v.tema===tema).map(v=>v.categoria));mostrarGrupo("B2",true);}
   aplicarFiltros();
 });
@@ -266,11 +267,8 @@ menuC3.addEventListener("change",()=>{
     if(menuC3.value==="")return;
     const indice=Number(menuC3.value);
     if(!Number.isInteger(indice)||indice<0||indice>=videos.length)return;
-    selecionado=indice;
-    criarPlayer();
-    return;
+    selecionado=indice;criarPlayer();return;
   }
-
   limparAbaixo(3);
   const tema=menuA1.value,categoria=menuB2.value,classificacao=menuC3.value;
   if(tema&&categoria&&classificacao){
@@ -281,85 +279,35 @@ menuC3.addEventListener("change",()=>{
 });
 menuD4.addEventListener("change",aplicarFiltros);
 
-function limparPlayerPesquisa(){
-  geracaoPlayer++;
-  if(hlsInstance){try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
-  if(ytPlayerApi){try{ytPlayerApi.destroy();}catch(e){}ytPlayerApi=null;}
-  document.getElementById("player").replaceChildren();
-  player=null;
-}
-
-function ativarPesquisa(ativar) {
-  modoPesquisa = ativar;
-  campoPesquisa.style.display = ativar ? "block" : "none";
-  menuB2.style.display = ativar ? "none" : "";
-  mostrarGrupo("B2", ativar);
-  mostrarGrupo("C3", ativar);
-  mostrarGrupo("D4", false);
-
-  if (ativar) {
-    limparPlayerPesquisa();
-    videos = [];
-    selecionado = 0;
-    campoPesquisa.value = "";
+function limparPlayerPesquisa(){destruirPlayerAtual();}
+function ativarPesquisa(ativar){
+  modoPesquisa=ativar;
+  campoPesquisa.style.display=ativar?"block":"none";
+  menuB2.style.display=ativar?"none":"";
+  mostrarGrupo("B2",ativar);mostrarGrupo("C3",ativar);mostrarGrupo("D4",false);
+  if(ativar){
+    limparPlayerPesquisa();videos=[];selecionado=0;campoPesquisa.value="";
     menuC3.replaceChildren();
-    const opcao = document.createElement("option");
-    opcao.value = "";
-    opcao.textContent = "Digite para pesquisar";
-    menuC3.appendChild(opcao);
-    menuC3.disabled = true;
-    atualizarBotoesNavegacao();
-    status.textContent = "Digite o nome de um canal ou conteúdo.";
-    campoPesquisa.focus();
-  } else {
-    menuC3.disabled = false;
-    campoPesquisa.value = "";
-  }
+    const opcao=document.createElement("option");opcao.value="";opcao.textContent="Digite para pesquisar";menuC3.appendChild(opcao);
+    menuC3.disabled=true;atualizarBotoesNavegacao();status.textContent="Digite o nome de um canal ou conteúdo.";campoPesquisa.focus();
+  }else{menuC3.disabled=false;campoPesquisa.value="";}
 }
-
-function pesquisarConteudo() {
-  if (!modoPesquisa) return;
-
-  const termo = campoPesquisa.value.trim().toLocaleLowerCase("pt-BR");
-  // A pesquisa considera somente os dois últimos campos: classificação (C3) e título (D4).
-  const encontrados = termo
-    ? todosVideos.filter(v =>
-        [v.classificacao, v.titulo]
-          .some(valor => String(valor || "").toLocaleLowerCase("pt-BR").includes(termo))
-      )
-    : [];
-
-  // Ao mudar a busca, interrompe o conteúdo anterior para não deixar um vídeo antigo tocando.
-  limparPlayerPesquisa();
-  videos = encontrados;
-  selecionado = 0;
-  menuC3.replaceChildren();
-
-  const inicial = document.createElement("option");
-  inicial.value = "";
-  inicial.textContent = termo
-    ? (encontrados.length
-        ? `${encontrados.length} resultado(s) encontrado(s)`
-        : "Nenhum resultado encontrado")
-    : "Digite para pesquisar";
+function pesquisarConteudo(){
+  if(!modoPesquisa)return;
+  const termo=campoPesquisa.value.trim().toLocaleLowerCase("pt-BR");
+  const encontrados=termo?todosVideos.filter(v=>[v.classificacao,v.titulo].some(valor=>String(valor||"").toLocaleLowerCase("pt-BR").includes(termo))):[];
+  limparPlayerPesquisa();videos=encontrados;selecionado=0;menuC3.replaceChildren();
+  const inicial=document.createElement("option");inicial.value="";
+  inicial.textContent=termo?(encontrados.length?`${encontrados.length} resultado(s) encontrado(s)`:"Nenhum resultado encontrado"):"Digite para pesquisar";
   menuC3.appendChild(inicial);
-
-  encontrados.forEach((video, indice) => {
-    const opcao = document.createElement("option");
-    opcao.value = String(indice);
-    // Mostra juntos os campos C3 e D4 no resultado.
-    opcao.textContent = [video.classificacao, video.titulo].filter(Boolean).join(" - ");
-    menuC3.appendChild(opcao);
+  encontrados.forEach((video,indice)=>{
+    const opcao=document.createElement("option");opcao.value=String(indice);
+    opcao.textContent=[video.classificacao,video.titulo].filter(Boolean).join(" - ");menuC3.appendChild(opcao);
   });
-
-  menuC3.disabled = encontrados.length === 0;
-  atualizarBotoesNavegacao();
-  status.textContent = encontrados.length
-    ? `${encontrados.length} resultado(s). Selecione um conteúdo para reproduzir.`
-    : (termo ? "Nenhum conteúdo corresponde à pesquisa." : "Digite o nome de um canal ou conteúdo.");
+  menuC3.disabled=encontrados.length===0;atualizarBotoesNavegacao();
+  status.textContent=encontrados.length?`${encontrados.length} resultado(s). Selecione um conteúdo para reproduzir.`:(termo?"Nenhum conteúdo corresponde à pesquisa.":"Digite o nome de um canal ou conteúdo.");
 }
-
-campoPesquisa.addEventListener("input", pesquisarConteudo);
+campoPesquisa.addEventListener("input",pesquisarConteudo);
 
 function extrairId(valor){
   try{
@@ -380,6 +328,26 @@ function criarPlayer(){
   if(ytPlayerApi){try{ytPlayerApi.destroy();}catch(e){}ytPlayerApi=null;}
   if(hlsInstance){try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
   area.replaceChildren();player=null;
+
+  // Restream: incorpora a página oficial do player; não trata a URL como áudio.
+  if(item.tipo==="restream"){
+    const iframe=document.createElement("iframe");
+    iframe.title=item.titulo||"Player Restream";
+    iframe.src=item.url;
+    iframe.allow="autoplay; fullscreen; picture-in-picture; encrypted-media";
+    iframe.allowFullscreen=true;
+    iframe.referrerPolicy="strict-origin-when-cross-origin";
+    iframe.style.cssText="display:block;width:100%;height:100%;border:0;background:#000;";
+    area.appendChild(iframe);player=iframe;
+    status.textContent="Carregando transmissão Restream: "+item.titulo;
+    iframe.addEventListener("load",()=>{
+      if(geracao===geracaoPlayer)status.textContent="Player Restream carregado: "+item.titulo;
+    });
+    iframe.addEventListener("error",()=>{
+      if(geracao===geracaoPlayer)status.textContent="Não foi possível carregar o player Restream.";
+    });
+    return;
+  }
 
   if(item.tipo==="hls"||/\.m3u8(?:$|[?#])/i.test(item.url)){
     const videoEl=document.createElement("video");
@@ -450,9 +418,16 @@ function processarLista(texto){
     }else if(partes.length===2){titulo=partes[0]||"Vídeo "+(indice+1);url=partes[1];tema="normal";categoria="filmes";classificacao="Geral";}
     else{titulo="Vídeo "+(indice+1);url=partes[0];tema="normal";categoria="filmes";classificacao="Geral";}
     tema=tema||"Normal";categoria=categoria||"Filmes";classificacao=classificacao||"Geral";titulo=titulo||"Vídeo "+(indice+1);
-    const id=extrairId(url),tipo=/\.m3u8(?:$|[?#])/i.test(url)?"hls":(id?"youtube":"desconhecido");
-    if(tipo==="hls")return{tema,categoria,classificacao,titulo,id:null,url,tipo};
-    return id?{tema,categoria,classificacao,titulo,id,url,tipo}:null;
+    const id=extrairId(url);
+    let tipo="desconhecido";
+    try{
+      const host=new URL(url).hostname.toLowerCase();
+      if(host==="restream.io"||host.endsWith(".restream.io"))tipo="restream";
+      else if(/\.m3u8(?:$|[?#])/i.test(url))tipo="hls";
+      else if(id)tipo="youtube";
+    }catch(e){}
+    if(tipo==="hls"||tipo==="restream")return{tema,categoria,classificacao,titulo,id:null,url,tipo};
+    return tipo==="youtube"?{tema,categoria,classificacao,titulo,id,url,tipo}:null;
   }).filter(Boolean);
   const temas=[...new Set(todosVideos.map(v=>v.tema).filter(Boolean))].filter(tema=>tema!=="Pesquisa").sort((a,b)=>a.localeCompare(b,"pt-BR"));
   menuA1.replaceChildren();
@@ -463,6 +438,7 @@ function processarLista(texto){
   document.getElementById("mensagemLista").textContent="";
   status.textContent=`Lista carregada: ${todosVideos.length} conteúdo(s).`;
 }
+
 const arquivoPlaylist=document.getElementById("arquivoPlaylist");
 const seletorLista=document.getElementById("seletorLista");
 function abrirSeletorLista(){seletorLista.style.display="flex";document.getElementById("mensagemLista").textContent="Selecione o arquivo playlist.txt.";}
@@ -471,22 +447,18 @@ const botaoCarregarArquivo=document.getElementById("carregarArquivoPlaylist");
 arquivoPlaylist.addEventListener("change",()=>{
   const arquivo=arquivoPlaylist.files&&arquivoPlaylist.files[0];
   botaoCarregarArquivo.disabled=!arquivo;
-  document.getElementById("mensagemLista").textContent=arquivo
-    ? "Arquivo selecionado: "+arquivo.name+". Agora clique em CARREGAR LISTA."
-    : "Nenhuma lista selecionada.";
+  document.getElementById("mensagemLista").textContent=arquivo?"Arquivo selecionado: "+arquivo.name+". Agora clique em CARREGAR LISTA.":"Nenhuma lista selecionada.";
 });
 botaoCarregarArquivo.addEventListener("click",async()=>{
   const arquivo=arquivoPlaylist.files&&arquivoPlaylist.files[0];
   if(!arquivo){document.getElementById("mensagemLista").textContent="Primeiro escolha o arquivo playlist.txt.";return;}
-  const mensagem=document.getElementById("mensagemLista");
-  mensagem.textContent="Lendo "+arquivo.name+"…";
+  const mensagem=document.getElementById("mensagemLista");mensagem.textContent="Lendo "+arquivo.name+"…";
   try{
     const texto=await arquivo.text();
     if(!texto.trim())throw new Error("O arquivo está vazio.");
     processarLista(texto);
   }catch(erro){
-    console.error(erro);
-    mensagem.textContent="Erro ao carregar "+arquivo.name+": "+(erro.message||"erro desconhecido");
+    console.error(erro);mensagem.textContent="Erro ao carregar "+arquivo.name+": "+(erro.message||"erro desconhecido");
   }
 });
 </script>

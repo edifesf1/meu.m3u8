@@ -50,7 +50,8 @@ header{
 main{position:relative;flex:1 1 auto;min-width:0;min-height:0;width:100%;overflow:hidden;background:#000}
 #player{position:absolute;inset:0;width:100%;height:100%;background:#000;overflow:hidden}
 #player iframe,#player video,#player>div,#player>div iframe{display:block;width:100%!important;height:100%!important;border:0}
-#status,#lista{display:none!important}
+#status{display:block!important;position:absolute;left:10px;right:10px;bottom:10px;z-index:50;min-height:22px;padding:9px 12px;border-radius:6px;background:rgba(0,0,0,.78);color:#fff;font-size:13px;line-height:1.4;overflow-wrap:anywhere;pointer-events:none;text-align:center}
+#lista{display:none!important}
 #drawerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:900;display:none}
 #drawerOverlay.aberto{display:block}
 #drawer{width:min(320px,86vw);height:100%;overflow-y:auto;background:#1b1b1b;box-shadow:4px 0 16px rgba(0,0,0,.4);padding:0 0 20px}
@@ -425,7 +426,7 @@ function criarPlayer(){
       montarPlayerYouTube(item,videoId,geracao,area);
     }).catch(erro=>{
       if(geracao!==geracaoPlayer)return;
-      status.textContent=erro.message;
+      status.textContent="Não foi possível localizar a live: "+erro.message;
       registrarFalha(item,"YouTube Data API",erro.message,"CANAL_LIVE");
     });
     return;

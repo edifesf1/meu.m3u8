@@ -417,7 +417,7 @@ if(item.tipo==="restream"){
             if(geracao!==geracaoPlayer)return;
 
             iframe.contentWindow.postMessage("mude=true","*");
-        },1000);
+        },10000);
     });
 
     iframe.addEventListener("error",()=>{

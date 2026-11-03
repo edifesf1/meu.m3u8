@@ -146,47 +146,6 @@ let ytPlayerApi = null;
 let player = null;
 let geracaoPlayer = 0;
 let modoPesquisa = false;
-// Para localizar a live atual de canais por @handle, configure uma chave da YouTube Data API v3.
-const YOUTUBE_API_KEY = "AIzaSyB_ts7jN-KEIAJnfDjc3yi_J2DcPbRceW0";
-const cacheCanalYouTube = new Map();
-const cacheLiveYouTube = new Map();
-let temporizadorLiveYouTube = null;
-
-function extrairHandleLive(valor){
-  try{
-    const u=new URL(valor);
-    if(!/(^|\.)youtube\.com$/i.test(u.hostname))return null;
-    const m=u.pathname.match(/^\/@([^/]+)\/live\/?$/i);
-    return m?m[1]:null;
-  }catch(e){return null;}
-}
-async function buscarLiveAtual(url){
-  if(!YOUTUBE_API_KEY || YOUTUBE_API_KEY.includes("COLOQUE_SUA_CHAVE"))
-    throw new Error("Configure a chave da YouTube Data API v3 no campo YOUTUBE_API_KEY do index.html.");
-  const handle=extrairHandleLive(url);
-  if(!handle)throw new Error("Endereço de canal ao vivo inválido. Use https://www.youtube.com/@Canal/live.");
-  const agora=Date.now();
-  const liveCache=cacheLiveYouTube.get(handle);
-  if(liveCache && agora-liveCache.tempo<5*60*1000)return liveCache.videoId;
-  let channelId=cacheCanalYouTube.get(handle);
-  if(!channelId){
-    const qp=new URLSearchParams({part:"id",forHandle:handle,key:YOUTUBE_API_KEY});
-    const resposta=await fetch("https://www.googleapis.com/youtube/v3/channels?"+qp);
-    const dados=await resposta.json();
-    if(!resposta.ok)throw new Error(dados.error?.message||"Não foi possível localizar o canal no YouTube.");
-    channelId=dados.items?.[0]?.id;
-    if(!channelId)throw new Error("Canal @"+handle+" não encontrado pela API do YouTube.");
-    cacheCanalYouTube.set(handle,channelId);
-  }
-  const qp=new URLSearchParams({part:"id",channelId,eventType:"live",type:"video",order:"date",maxResults:"1",key:YOUTUBE_API_KEY});
-  const resposta=await fetch("https://www.googleapis.com/youtube/v3/search?"+qp);
-  const dados=await resposta.json();
-  if(!resposta.ok)throw new Error(dados.error?.message||"Falha ao consultar a transmissão ao vivo.");
-  const videoId=dados.items?.[0]?.id?.videoId;
-  if(!videoId)throw new Error("O canal @"+handle+" não tem uma transmissão pública ao vivo neste momento.");
-  cacheLiveYouTube.set(handle,{videoId,tempo:agora});
-  return videoId;
-}
 const menuA1 = document.getElementById("menuA1");
 const menuB2 = document.getElementById("menuB2");
 const menuC3 = document.getElementById("menuC3");
@@ -194,6 +153,10 @@ const menuD4 = document.getElementById("menuD4");
 const campoPesquisa = document.getElementById("campoPesquisa");
 const lista = document.getElementById("lista");
 const status = document.getElementById("status");
+
+// Cole aqui a chave da YouTube Data API v3 criada no Google Cloud Console.
+// Não compartilhe o arquivo com a chave publicada; restrinja a chave ao seu site.
+const YOUTUBE_API_KEY = "AIzaSyB_ts7jN-KEIAJnfDjc3yi_J2DcPbRceW0";
 
 let promessaAPIYouTube = null;
 function carregarYouTubeAPI(){
@@ -268,7 +231,6 @@ function limparAbaixo(nivel){
 }
 function destruirPlayerAtual(){
   geracaoPlayer++;
-  if(temporizadorLiveYouTube){clearInterval(temporizadorLiveYouTube);temporizadorLiveYouTube=null;}
   if(hlsInstance){try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
   if(ytPlayerApi){try{ytPlayerApi.destroy();}catch(e){}ytPlayerApi=null;}
   document.getElementById("player").replaceChildren();
@@ -363,10 +325,42 @@ function extrairId(valor){
   }catch(e){return null;}
 }
 
+function extrairHandleCanal(valor){
+  try{
+    const url=new URL(valor);
+    if(!["youtube.com","www.youtube.com","m.youtube.com"].includes(url.hostname.toLowerCase()))return null;
+    const match=url.pathname.match(/^\/@([^/]+)\/live\/?$/i);
+    return match?decodeURIComponent(match[1]):null;
+  }catch(e){return null;}
+}
+
+async function youtubeApi(endpoint, parametros){
+  if(!YOUTUBE_API_KEY || YOUTUBE_API_KEY==="COLE_SUA_CHAVE_DA_API_AQUI"){
+    throw new Error("Configure a chave da YouTube Data API v3 no início do arquivo HTML.");
+  }
+  const url=new URL("https://www.googleapis.com/youtube/v3/"+endpoint);
+  Object.entries({...parametros,key:YOUTUBE_API_KEY}).forEach(([k,v])=>url.searchParams.set(k,v));
+  const resposta=await fetch(url.toString());
+  const dados=await resposta.json().catch(()=>({}));
+  if(!resposta.ok)throw new Error(dados.error?.message||("Erro da YouTube Data API: HTTP "+resposta.status));
+  return dados;
+}
+
+async function resolverTransmissaoAoVivo(item){
+  const handle=item.handle||extrairHandleCanal(item.url);
+  if(!handle)throw new Error("Não foi possível identificar o nome do canal neste endereço.");
+  const canais=await youtubeApi("channels",{part:"id",forHandle:handle,maxResults:"1"});
+  const canalId=canais.items?.[0]?.id;
+  if(!canalId)throw new Error("O canal @"+handle+" não foi encontrado pela YouTube Data API.");
+  const busca=await youtubeApi("search",{part:"id",channelId:canalId,eventType:"live",type:"video",order:"date",maxResults:"1"});
+  const videoId=busca.items?.[0]?.id?.videoId;
+  if(!videoId)throw new Error("O canal @"+handle+" não está transmitindo ao vivo neste momento.");
+  return videoId;
+}
+
 function criarPlayer(){
   if(!videos.length)return;
   const item=videos[selecionado];if(!item)return;
-  if(temporizadorLiveYouTube){clearInterval(temporizadorLiveYouTube);temporizadorLiveYouTube=null;}
   const area=document.getElementById("player"),geracao=++geracaoPlayer;
   if(ytPlayerApi){try{ytPlayerApi.destroy();}catch(e){}ytPlayerApi=null;}
   if(hlsInstance){try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
@@ -422,20 +416,31 @@ function criarPlayer(){
     return;
   }
 
+  let videoId=item.id;
+  if(item.tipo==="youtube-channel"){
+    status.textContent="Localizando a transmissão ao vivo de "+item.titulo+"…";
+    resolverTransmissaoAoVivo(item).then(id=>{
+      if(geracao!==geracaoPlayer)return;
+      videoId=id;
+      montarPlayerYouTube(item,videoId,geracao,area);
+    }).catch(erro=>{
+      if(geracao!==geracaoPlayer)return;
+      status.textContent=erro.message;
+      registrarFalha(item,"YouTube Data API",erro.message,"CANAL_LIVE");
+    });
+    return;
+  }
+  montarPlayerYouTube(item,videoId,geracao,area);
+}
+
+function montarPlayerYouTube(item,videoId,geracao,area){
   const container=document.createElement("div");container.id="youtube-player-container-"+geracao;
   container.style.cssText="width:100%;height:100%;background:#000;";area.appendChild(container);
   status.textContent="Carregando player do YouTube…";
-  (async()=>{
-    try{
-      let videoId=item.id;
-      if(item.tipo==="youtube-live"){
-        status.textContent="Localizando a transmissão atual de "+item.titulo+"…";
-        videoId=await buscarLiveAtual(item.url);
-      }
-      await carregarYouTubeAPI();
-      if(geracao!==geracaoPlayer||!area.contains(container))return;
-      ytPlayerApi=new YT.Player(container.id,{
-      width:"100%",height:"100%",videoId,
+  carregarYouTubeAPI().then(()=>{
+    if(geracao!==geracaoPlayer||!area.contains(container))return;
+    ytPlayerApi=new YT.Player(container.id,{
+      width:"100%",height:"100%",videoId:videoId,
       playerVars:{autoplay:1,playsinline:1,rel:0,enablejsapi:1,origin:location.origin},
       events:{
         onReady:event=>{status.textContent="Player do YouTube carregado.";event.target.playVideo();},
@@ -446,28 +451,13 @@ function criarPlayer(){
           registrarFalha(item,"YouTube",mensagens[event.data]||"Erro informado pelo player do YouTube",event.data);
         }
       }
-      });
-      player=ytPlayerApi;
-      if(item.tipo==="youtube-live"){
-        // Reconsulta a cada 20 minutos para acompanhar a troca da transmissão do canal.
-        temporizadorLiveYouTube=setInterval(async()=>{
-          if(geracao!==geracaoPlayer)return;
-          cacheLiveYouTube.delete(extrairHandleLive(item.url));
-          try{
-            const novoId=await buscarLiveAtual(item.url);
-            if(geracao===geracaoPlayer && novoId!==videoId){
-              status.textContent="Nova transmissão encontrada. Atualizando player…";
-              criarPlayer();
-            }
-          }catch(erro){console.warn("Atualização da live:",erro.message);}
-        },20*60*1000);
-      }
-    }catch(erro){
-      if(geracao!==geracaoPlayer)return;
-      status.textContent=erro.message||"Não foi possível carregar o player do YouTube.";
-      registrarFalha(item,"YouTube",erro.message||"Falha ao carregar a API do YouTube","API");
-    }
-  })();
+    });
+    player=ytPlayerApi;
+  }).catch(erro=>{
+    if(geracao!==geracaoPlayer)return;
+    status.textContent="Não foi possível carregar o player do YouTube.";
+    registrarFalha(item,"YouTube",erro.message||"Falha ao carregar a API do YouTube","API");
+  });
 }
 
 function processarLista(texto){
@@ -484,15 +474,17 @@ function processarLista(texto){
     else{titulo="Vídeo "+(indice+1);url=partes[0];tema="normal";categoria="filmes";classificacao="Geral";}
     tema=tema||"Normal";categoria=categoria||"Filmes";classificacao=classificacao||"Geral";titulo=titulo||"Vídeo "+(indice+1);
     const id=extrairId(url);
+    const handle=extrairHandleCanal(url);
     let tipo="desconhecido";
     try{
       const host=new URL(url).hostname.toLowerCase();
       if(host==="restream.io"||host.endsWith(".restream.io"))tipo="restream";
       else if(/\.m3u8(?:$|[?#])/i.test(url))tipo="hls";
-      else if(extrairHandleLive(url))tipo="youtube-live";
+      else if(handle)tipo="youtube-channel";
       else if(id)tipo="youtube";
     }catch(e){}
-    if(tipo==="hls"||tipo==="restream"||tipo==="youtube-live")return{tema,categoria,classificacao,titulo,id:null,url,tipo};
+    if(tipo==="hls"||tipo==="restream")return{tema,categoria,classificacao,titulo,id:null,url,tipo};
+    if(tipo==="youtube-channel")return{tema,categoria,classificacao,titulo,id:null,url,tipo,handle};
     return tipo==="youtube"?{tema,categoria,classificacao,titulo,id,url,tipo}:null;
   }).filter(Boolean);
   const temas=[...new Set(todosVideos.map(v=>v.tema).filter(Boolean))].filter(tema=>tema!=="Pesquisa").sort((a,b)=>a.localeCompare(b,"pt-BR"));

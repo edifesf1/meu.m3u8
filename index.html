@@ -392,9 +392,8 @@ function criarPlayer(){
     });
     return;
   }
-
-  // Restream: incorpora a página oficial do player; não trata a URL como áudio.
-  if(item.tipo==="restream"){
+// Restream: incorpora a página oficial do player.
+if(item.tipo==="restream"){
     const iframe=document.createElement("iframe");
     iframe.title=item.titulo||"Player Restream";
     iframe.src=item.url;
@@ -402,24 +401,32 @@ function criarPlayer(){
     iframe.allowFullscreen=true;
     iframe.referrerPolicy="strict-origin-when-cross-origin";
     iframe.style.cssText="display:block;width:100%;height:100%;border:0;background:#000;";
-    area.appendChild(iframe);player=iframe;
+
+    area.appendChild(iframe);
+    player=iframe;
+
     status.textContent="Carregando transmissão Restream: "+item.titulo;
-    // Aguarda 1 segundo após o carregamento e envia o comando.
+
+    iframe.addEventListener("load",()=>{
+        if(geracao!==geracaoPlayer)return;
+
+        status.textContent="Player Restream carregado: "+item.titulo;
+
+        // Aguarda 1 segundo após carregar o Restream.
         setTimeout(()=>{
             if(geracao!==geracaoPlayer)return;
 
             iframe.contentWindow.postMessage("mude=true","*");
         },1000);
     });
-    //iframe.addEventListener("load",()=>{
-    //  if(geracao===geracaoPlayer)status.textContent="Player Restream carregado: "+item.titulo;
-   // });
-    
+
     iframe.addEventListener("error",()=>{
-      if(geracao===geracaoPlayer)status.textContent="Não foi possível carregar o player Restream.";
+        if(geracao===geracaoPlayer)
+            status.textContent="Não foi possível carregar o player Restream.";
     });
+
     return;
-  }
+}
 
   if(item.tipo==="hls"||/\.m3u8(?:$|[?#])/i.test(item.url)){
     const videoEl=document.createElement("video");

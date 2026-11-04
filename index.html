@@ -5,564 +5,154 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Youtube IPTV - Teste Local</title>
 <style>
-*{box-sizing:border-box}
-html,body{width:100%;height:100%;min-height:100%;margin:0;overflow:hidden;background:#000;color:#fff;font-family:Arial,sans-serif}
-body{display:flex;flex-direction:column}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000;color:#fff;font-family:Arial,sans-serif}body{display:flex;flex-direction:column}
 #seletorLista{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at top,#3a1010,#090909 70%)}
 #caixaLista{width:min(460px,100%);padding:28px;border-radius:15px;background:#1b1b1b;border:1px solid #454545;text-align:center;box-shadow:0 18px 60px #0009}
-#caixaLista h1{margin:0 0 10px;font-size:25px}
-#caixaLista p{color:#ccc;line-height:1.5}
-#arquivoPlaylist{display:block;width:100%;margin:18px 0;color:#fff}
-#abrirPlaylist,#trocarPlaylist{border:1px solid #fff8;border-radius:6px;background:#990000;color:#fff;padding:9px 12px;font-weight:bold;cursor:pointer}
+#caixaLista h1{margin:0 0 10px;font-size:25px}#caixaLista p{color:#ccc;line-height:1.5}#arquivoPlaylist{display:block;width:100%;margin:18px 0;color:#fff}
+#carregarArquivoPlaylist,#trocarPlaylist{border:1px solid #fff8;border-radius:6px;background:#c00;color:#fff;padding:11px 16px;font-weight:bold;cursor:pointer}
+#carregarArquivoPlaylist:disabled{opacity:.45;cursor:not-allowed}#trocarPlaylist{font-size:12px;padding:7px 9px}
 #mensagemLista{font-size:13px;color:#ffbdbd;min-height:20px;overflow-wrap:anywhere}
-#carregarArquivoPlaylist{border:1px solid #fff8;border-radius:6px;background:#c00;color:#fff;padding:11px 16px;font-weight:bold;cursor:pointer}
-#carregarArquivoPlaylist:disabled{opacity:.45;cursor:not-allowed}
-#trocarPlaylist{font-size:12px;padding:7px 9px}
-header{
-  position:relative;z-index:100;flex:0 0 auto;width:100%;
-  display:flex;align-items:center;gap:8px;padding:8px 12px;
-  min-height:58px;background:#c00;
-}
+header{position:relative;z-index:100;flex:0 0 auto;width:100%;display:flex;align-items:center;gap:8px;padding:8px 12px;min-height:58px;background:#c00}
 #cascadeBar{display:flex;align-items:center;gap:7px;flex:1 1 auto;min-width:0;overflow-x:auto;background:transparent}
-.cascade-group{display:flex;flex:1 1 0;min-width:0}
-.cascade-group label{display:none}
-.cascade-group select{
-  width:100%;min-width:0;max-width:240px;padding:9px 22px 9px 8px;
-  border:1px solid rgba(255,255,255,.5);border-radius:5px;
-  background:#a90000;color:#fff;font-size:14px;outline:none
-}
-.cascade-group select:focus{border-color:#fff}
-.cascade-group[hidden]{display:none}
-#navegacaoCanais{display:flex;align-items:center;justify-content:center;gap:5px;flex:0 0 auto}
-#navegacaoCanais button{
-  display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;
-  padding:0;border:1px solid rgba(255,255,255,.65);border-radius:6px;
-  background:#990000;color:#fff;font-size:22px;font-weight:bold;cursor:pointer
-}
+.cascade-group{display:flex;flex:1 1 0;min-width:0}.cascade-group label{display:none}
+.cascade-group select{width:100%;min-width:0;max-width:240px;padding:9px 22px 9px 8px;border:1px solid #ffffff80;border-radius:5px;background:#a90000;color:#fff;font-size:14px;outline:none}
+.cascade-group[hidden]{display:none}#navegacaoCanais{display:flex;align-items:center;justify-content:center;gap:5px;flex:0 0 auto}
+#navegacaoCanais button{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;padding:0;border:1px solid #ffffffa6;border-radius:6px;background:#900;color:#fff;font-size:22px;font-weight:bold;cursor:pointer}
 #navegacaoCanais button:disabled{opacity:.45;cursor:not-allowed}
-#botaoTarja{
-  display:inline-flex;align-items:center;justify-content:center;
-  flex:0 0 auto;width:30px;height:30px;padding:0;
-  border:1px solid rgba(255,255,255,.7);border-radius:5px;
-  background:#790000;color:#fff;font-size:18px;font-weight:bold;line-height:1;cursor:pointer
-}
-#temaAtual{display:none}
+#botaoTarja{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:30px;height:30px;padding:0;border:1px solid #ffffffb3;border-radius:5px;background:#790000;color:#fff;font-size:18px;font-weight:bold;cursor:pointer}
 main{position:relative;flex:1 1 auto;min-width:0;min-height:0;width:100%;overflow:hidden;background:#000}
 #player{position:absolute;inset:0;width:100%;height:100%;background:#000;overflow:hidden}
 #player iframe,#player video,#player>div,#player>div iframe{display:block;width:100%!important;height:100%!important;border:0}
-#status{display:block!important;position:absolute;left:10px;right:10px;bottom:10px;z-index:50;min-height:22px;padding:9px 12px;border-radius:6px;background:rgba(0,0,0,.78);color:#fff;font-size:13px;line-height:1.4;overflow-wrap:anywhere;pointer-events:none;text-align:center}
+#status{display:block!important;position:absolute;left:10px;right:10px;bottom:10px;z-index:50;min-height:22px;padding:9px 12px;border-radius:6px;background:#000c;color:#fff;font-size:13px;line-height:1.4;overflow-wrap:anywhere;pointer-events:none;text-align:center}
 #lista{display:none!important}
-#drawerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:900;display:none}
-#drawerOverlay.aberto{display:block}
-#drawer{width:min(320px,86vw);height:100%;overflow-y:auto;background:#1b1b1b;box-shadow:4px 0 16px rgba(0,0,0,.4);padding:0 0 20px}
-.drawerHeader{display:flex;justify-content:space-between;align-items:center;background:#c00;padding:17px 16px;font-size:20px;font-weight:bold}
-#closeMenu{border:0;color:#fff;background:transparent;font-size:28px;cursor:pointer}
-.menuIntro{color:#bbb;font-size:13px;padding:15px 16px 8px}
-#temasMenu{display:grid}
-#temasMenu button{background:transparent;border:0;color:#eee;text-align:left;padding:14px 18px;font-size:16px;cursor:pointer;border-bottom:1px solid #333}
-#temasMenu button:hover,#temasMenu button.ativo{background:#383030;color:#fff;border-left:4px solid #f33}
-@media(max-width:600px){
-  header{gap:5px;padding:7px 6px;min-height:52px}
-  #cascadeBar{gap:4px}
-  .cascade-group select{max-width:none;font-size:11px;padding:8px 15px 8px 4px}
-  #navegacaoCanais{gap:3px}
-  #navegacaoCanais button{width:30px;height:32px;font-size:18px}
-  #botaoTarja{width:27px;height:27px;font-size:16px}
-}
-@media(max-width:360px){
-  header{gap:3px;padding:5px 4px}
-  .cascade-group select{font-size:10px;padding-left:3px}
-  #navegacaoCanais button{width:27px}
-  #botaoTarja{width:25px;height:25px;font-size:15px}
-}
-
-/* Ao recolher a tarja, o vídeo ocupa toda a tela e o botão continua acessível. */
-body.tarja-recolhida>header{
-  position:fixed;top:0;left:0;right:0;height:0;min-height:0;padding:0;
-  background:transparent;pointer-events:none;z-index:200
-}
-body.tarja-recolhida>header>#cascadeBar,
-body.tarja-recolhida>header>#navegacaoCanais{display:none}
-body.tarja-recolhida>header>#botaoTarja{
-  position:fixed;top:8px;right:8px;pointer-events:auto;
-  width:30px;height:30px;background:rgba(120,0,0,.78);
-  border-color:rgba(255,255,255,.55);opacity:.78
-}
-body.tarja-recolhida>main{
-  position:fixed;inset:0;width:100%;height:100%;min-height:0;
-  flex:none
-}
+@media(max-width:600px){header{gap:5px;padding:7px 6px;min-height:52px}#cascadeBar{gap:4px}.cascade-group select{max-width:none;font-size:11px;padding:8px 15px 8px 4px}#navegacaoCanais{gap:3px}#navegacaoCanais button{width:30px;height:32px;font-size:18px}#botaoTarja{width:27px;height:27px;font-size:16px}}
+@media(max-width:360px){header{gap:3px;padding:5px 4px}.cascade-group select{font-size:10px;padding-left:3px}#navegacaoCanais button{width:27px}#botaoTarja{width:25px;height:25px;font-size:15px}}
+body.tarja-recolhida>header{position:fixed;top:0;left:0;right:0;height:0;min-height:0;padding:0;background:transparent;pointer-events:none;z-index:200}
+body.tarja-recolhida>header>#cascadeBar,body.tarja-recolhida>header>#navegacaoCanais,body.tarja-recolhida>header>#trocarPlaylist{display:none}
+body.tarja-recolhida>header>#botaoTarja{position:fixed;top:8px;right:8px;pointer-events:auto;width:30px;height:30px;background:#780000c7;opacity:.78}
+body.tarja-recolhida>main{position:fixed;inset:0;width:100%;height:100%;min-height:0;flex:none}
 body.tarja-recolhida #player{position:absolute;inset:0;width:100%;height:100%}
-body.tarja-recolhida>header>#botaoTarja:hover,
-body.tarja-recolhida>header>#botaoTarja:focus{opacity:1}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.15"></script>
 </head>
 <body>
-<!-- Versão local sem senha; não precisa de Python nem servidor. -->
-<section id="seletorLista" aria-label="Selecionar lista">
-  <div id="caixaLista">
-    <h1>Youtube IPTV — Teste local</h1>
-    <p>Selecione o arquivo <b>playlist.txt</b> que está no seu computador.</p>
-    <input id="arquivoPlaylist" type="file" accept=".txt,.m3u,.m3u8,text/plain,audio/x-mpegurl">
-    <button id="carregarArquivoPlaylist" type="button" disabled>CARREGAR LISTA</button>
-    <div id="mensagemLista">Escolha o arquivo e depois clique em CARREGAR LISTA.</div>
-  </div>
-</section>
+<section id="seletorLista" aria-label="Selecionar lista"><div id="caixaLista">
+<h1>Youtube IPTV — Teste local</h1><p>Selecione o arquivo <b>playlist.txt</b> que está no seu computador.</p>
+<input id="arquivoPlaylist" type="file" accept=".txt,.m3u,.m3u8,text/plain,audio/x-mpegurl">
+<button id="carregarArquivoPlaylist" type="button" disabled>CARREGAR LISTA</button>
+<div id="mensagemLista">Escolha o arquivo e depois clique em CARREGAR LISTA.</div>
+</div></section>
 <header aria-label="Controles do player">
-  <nav id="cascadeBar" aria-label="Filtros">
-    <div class="cascade-group" id="grupoA1"><label for="menuA1">Tema</label><select id="menuA1" title="Tema" aria-label="Tema"><option value=""></option></select></div>
-    <div class="cascade-group" id="grupoB2" hidden>
-      <label for="menuB2">Categoria ou pesquisa</label>
-      <select id="menuB2" title="Categoria" aria-label="Categoria"><option value=""></option></select>
-      <input id="campoPesquisa" type="search" placeholder="Pesquisar conteúdo..." aria-label="Pesquisar canais, filmes, séries e músicas"
-        style="display:none;width:100%;min-width:100px;padding:9px 8px;border-radius:5px;border:1px solid white;background:#a90000;color:white;font-size:14px">
-    </div>
-    <div class="cascade-group" id="grupoC3" hidden>
-      <label for="menuC3">Resultados</label>
-      <select id="menuC3" title="Resultados" aria-label="Resultados"><option value=""></option></select>
-    </div>
-    <div class="cascade-group" id="grupoD4" hidden><label for="menuD4">Episódio</label><select id="menuD4" title="Episódio" aria-label="Episódio"><option value=""></option></select></div>
-  </nav>
-  <div id="navegacaoCanais" aria-label="Navegação entre canais">
-    <button id="canalAnterior" type="button" title="Canal anterior" aria-label="Canal anterior">◀</button>
-    <button id="proximoCanal" type="button" title="Próximo canal" aria-label="Próximo canal">▶</button>
-  </div>
-  <button id="trocarPlaylist" type="button" title="Selecionar outra playlist.txt">LISTA</button>
-  <button id="botaoTarja" type="button" title="Recolher tarja" aria-label="Recolher tarja" aria-pressed="false">▁</button>
+<nav id="cascadeBar" aria-label="Filtros">
+<div class="cascade-group" id="grupoA1"><label for="menuA1">Tema</label><select id="menuA1" title="Tema" aria-label="Tema"><option value=""></option></select></div>
+<div class="cascade-group" id="grupoB2" hidden><label for="menuB2">Categoria ou pesquisa</label><select id="menuB2" title="Categoria" aria-label="Categoria"><option value=""></option></select>
+<input id="campoPesquisa" type="search" placeholder="Pesquisar conteúdo..." aria-label="Pesquisar canais, filmes, séries e músicas" style="display:none;width:100%;min-width:100px;padding:9px 8px;border-radius:5px;border:1px solid white;background:#a90000;color:white;font-size:14px"></div>
+<div class="cascade-group" id="grupoC3" hidden><label for="menuC3">Resultados</label><select id="menuC3" title="Resultados" aria-label="Resultados"><option value=""></option></select></div>
+<div class="cascade-group" id="grupoD4" hidden><label for="menuD4">Episódio</label><select id="menuD4" title="Episódio" aria-label="Episódio"><option value=""></option></select></div>
+</nav>
+<div id="navegacaoCanais" aria-label="Navegação entre canais"><button id="canalAnterior" type="button" title="Canal anterior">◀</button><button id="proximoCanal" type="button" title="Próximo canal">▶</button></div>
+<button id="trocarPlaylist" type="button" title="Selecionar outra playlist.txt">LISTA</button>
+<button id="botaoTarja" type="button" title="Recolher tarja" aria-label="Recolher tarja" aria-pressed="false">▁</button>
 </header>
-
-<main>
-  <div id="player"></div>
-  <div id="status">Carregando playlist.txt...</div>
-  <div id="lista"></div>
-</main>
-
+<main><div id="player"></div><div id="status">Carregando playlist.txt...</div><div id="lista"></div></main>
 <script>
-let todosVideos = [];
-let videos = [];
-let selecionado = 0;
-let hlsInstance = null;
-let ytPlayerApi = null;
-let player = null;
-let geracaoPlayer = 0;
-let modoPesquisa = false;
-const menuA1 = document.getElementById("menuA1");
-const menuB2 = document.getElementById("menuB2");
-const menuC3 = document.getElementById("menuC3");
-const menuD4 = document.getElementById("menuD4");
-const campoPesquisa = document.getElementById("campoPesquisa");
-const lista = document.getElementById("lista");
-const status = document.getElementById("status");
-
-// Cole aqui a chave da YouTube Data API v3 criada no Google Cloud Console.
-// Não compartilhe o arquivo com a chave publicada; restrinja a chave ao seu site.
-const YOUTUBE_API_KEY = "AIzaSyB_ts7jN-KEIAJnfDjc3yi_J2DcPbRceW0";
-
-let promessaAPIYouTube = null;
+let todosVideos=[],videos=[],selecionado=0,hlsInstance=null,ytPlayerApi=null,player=null,geracaoPlayer=0,modoPesquisa=false;
+const menuA1=document.getElementById("menuA1"),menuB2=document.getElementById("menuB2"),menuC3=document.getElementById("menuC3"),menuD4=document.getElementById("menuD4"),campoPesquisa=document.getElementById("campoPesquisa"),lista=document.getElementById("lista"),status=document.getElementById("status");
+const YOUTUBE_API_KEY="COLE_SUA_CHAVE_DA_API_AQUI";
+let promessaAPIYouTube=null;
 function carregarYouTubeAPI(){
-  if (window.YT && window.YT.Player) return Promise.resolve();
-  if (promessaAPIYouTube) return promessaAPIYouTube;
-  promessaAPIYouTube = new Promise((resolve, reject) => {
-    const anterior = window.onYouTubeIframeAPIReady;
-    const timeout=setTimeout(()=>reject(new Error("Tempo esgotado ao carregar a API do YouTube.")),15000);
-    window.onYouTubeIframeAPIReady = () => {
-      clearTimeout(timeout);
-      if (typeof anterior === "function") { try { anterior(); } catch(e) {} }
-      resolve();
-    };
-    let script = document.querySelector('script[data-youtube-iframe-api="1"]');
-    if (!script) {
-      script = document.createElement("script");
-      script.src = "https://www.youtube.com/iframe_api";
-      script.async = true;
-      script.dataset.youtubeIframeApi = "1";
-      script.onerror = () => {clearTimeout(timeout);reject(new Error("Não foi possível carregar a API do YouTube. Verifique a conexão com a internet."));};
-      document.head.appendChild(script);
-    }
-  });
-  return promessaAPIYouTube;
+ if(window.YT&&window.YT.Player)return Promise.resolve();if(promessaAPIYouTube)return promessaAPIYouTube;
+ promessaAPIYouTube=new Promise((resolve,reject)=>{const anterior=window.onYouTubeIframeAPIReady;const timeout=setTimeout(()=>reject(new Error("Tempo esgotado ao carregar a API do YouTube.")),15000);
+ window.onYouTubeIframeAPIReady=()=>{clearTimeout(timeout);if(typeof anterior==="function"){try{anterior()}catch(e){}}resolve()};
+ let script=document.querySelector('script[data-youtube-iframe-api="1"]');if(!script){script=document.createElement("script");script.src="https://www.youtube.com/iframe_api";script.async=true;script.dataset.youtubeIframeApi="1";script.onerror=()=>{clearTimeout(timeout);reject(new Error("Não foi possível carregar a API do YouTube."))};document.head.appendChild(script)}
+ });return promessaAPIYouTube;
 }
-function registrarFalha(item, tipo, mensagem, codigo){
-  console.warn("Falha de reprodução:", {titulo:item?.titulo, tipo, mensagem, codigo});
-}
-
-const tarja = document.querySelector("header");
-const botaoCanalAnterior = document.getElementById("canalAnterior");
-const botaoProximoCanal = document.getElementById("proximoCanal");
-const botaoTarja = document.getElementById("botaoTarja");
-
-function alternarTarja(){
-  const recolhida=document.body.classList.toggle("tarja-recolhida");
-  botaoTarja.textContent=recolhida?"☰":"▁";
-  botaoTarja.title=recolhida?"Mostrar tarja":"Recolher tarja";
-  botaoTarja.setAttribute("aria-label",botaoTarja.title);
-  botaoTarja.setAttribute("aria-pressed",String(recolhida));
-}
+function registrarFalha(item,tipo,mensagem,codigo){console.warn("Falha de reprodução:",{titulo:item?.titulo,tipo,mensagem,codigo})}
+const botaoCanalAnterior=document.getElementById("canalAnterior"),botaoProximoCanal=document.getElementById("proximoCanal"),botaoTarja=document.getElementById("botaoTarja");
+function alternarTarja(){const recolhida=document.body.classList.toggle("tarja-recolhida");botaoTarja.textContent=recolhida?"☰":"▁";botaoTarja.title=recolhida?"Mostrar tarja":"Recolher tarja";botaoTarja.setAttribute("aria-label",botaoTarja.title);botaoTarja.setAttribute("aria-pressed",String(recolhida))}
 botaoTarja.addEventListener("click",alternarTarja);
-
-function atualizarBotoesNavegacao(){botaoCanalAnterior.disabled=botaoProximoCanal.disabled=videos.length<=1;}
-function navegarCanal(direcao){
-  if(!videos.length)return;
-  selecionado=(selecionado+direcao+videos.length)%videos.length;
-  const item=videos[selecionado];
-  if(menuD4.value)menuD4.value=item.titulo;
-  [...lista.children].forEach((b,i)=>b.classList.toggle("ativo",i===selecionado));
-  criarPlayer();
-}
-botaoCanalAnterior.addEventListener("click",()=>navegarCanal(-1));
-botaoProximoCanal.addEventListener("click",()=>navegarCanal(1));
-
-function preencherSelect(select,valores){
-  select.replaceChildren();
-  const inicial=document.createElement("option");inicial.value="";inicial.textContent="";select.appendChild(inicial);
-  [...new Set(valores.filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR")).forEach(valor=>{
-    const option=document.createElement("option");option.value=valor;option.textContent=valor;select.appendChild(option);
-  });
-  select.value="";
-}
-function mostrarGrupo(nome,mostrar){
-  const elemento=document.getElementById("grupo"+nome);
-  if(elemento)elemento.hidden=!mostrar;
-}
-function limparAbaixo(nivel){
-  if(nivel<=1){menuB2.value="";mostrarGrupo("B2",false);}
-  if(nivel<=2){menuC3.value="";mostrarGrupo("C3",false);}
-  if(nivel<=3){menuD4.value="";mostrarGrupo("D4",false);}
-}
-function destruirPlayerAtual(){
-  geracaoPlayer++;
-  if(hlsInstance){try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
-  if(ytPlayerApi){try{ytPlayerApi.destroy();}catch(e){}ytPlayerApi=null;}
-  document.getElementById("player").replaceChildren();
-  player=null;
-}
+function atualizarBotoesNavegacao(){botaoCanalAnterior.disabled=botaoProximoCanal.disabled=videos.length<=1}
+function navegarCanal(direcao){if(!videos.length)return;selecionado=(selecionado+direcao+videos.length)%videos.length;const item=videos[selecionado];if(menuD4.value)menuD4.value=item.titulo;[...lista.children].forEach((b,i)=>b.classList.toggle("ativo",i===selecionado));criarPlayer()}
+botaoCanalAnterior.addEventListener("click",()=>navegarCanal(-1));botaoProximoCanal.addEventListener("click",()=>navegarCanal(1));
+function preencherSelect(select,valores){select.replaceChildren();const inicial=document.createElement("option");inicial.value="";inicial.textContent="";select.appendChild(inicial);[...new Set(valores.filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR")).forEach(valor=>{const o=document.createElement("option");o.value=valor;o.textContent=valor;select.appendChild(o)});select.value=""}
+function mostrarGrupo(nome,mostrar){const el=document.getElementById("grupo"+nome);if(el)el.hidden=!mostrar}
+function limparAbaixo(nivel){if(nivel<=1){menuB2.value="";mostrarGrupo("B2",false)}if(nivel<=2){menuC3.value="";mostrarGrupo("C3",false)}if(nivel<=3){menuD4.value="";mostrarGrupo("D4",false)}}
+function destruirPlayerAtual(){geracaoPlayer++;if(hlsInstance){try{hlsInstance.destroy()}catch(e){}hlsInstance=null}if(ytPlayerApi){try{ytPlayerApi.destroy()}catch(e){}ytPlayerApi=null}document.getElementById("player").replaceChildren();player=null}
 function aplicarFiltros(){
-  const tema=menuA1.value,categoria=menuB2.value,classificacao=menuC3.value,episodio=menuD4.value;
-  videos=todosVideos.filter(v=>(!tema||v.tema===tema)&&(!categoria||v.categoria===categoria)&&(!classificacao||v.classificacao===classificacao));
-  lista.replaceChildren();
-  destruirPlayerAtual();
-  if(!videos.length){atualizarBotoesNavegacao();status.textContent=tema?"Nenhum vídeo nesta seleção.":"Selecione os menus acima.";return;}
-  videos.forEach((video,index)=>{
-    const botao=document.createElement("button");botao.textContent=`${index+1}. ${video.titulo}`;
-    botao.addEventListener("click",()=>{selecionado=index;criarPlayer();});lista.appendChild(botao);
-  });
-  selecionado=episodio?videos.findIndex(v=>v.titulo===episodio):0;
-  if(selecionado<0)selecionado=0;
-  atualizarBotoesNavegacao();
-  status.textContent=`${videos.length} vídeo(s).`;
-  criarPlayer();
+ const tema=menuA1.value,categoria=menuB2.value,classificacao=menuC3.value,episodio=menuD4.value;
+ videos=todosVideos.filter(v=>(!tema||v.tema===tema)&&(!categoria||v.categoria===categoria)&&(!classificacao||v.classificacao===classificacao));
+ lista.replaceChildren();destruirPlayerAtual();
+ if(!videos.length){atualizarBotoesNavegacao();status.textContent=tema?"Nenhum vídeo nesta seleção.":"Selecione os menus acima.";return}
+ videos.forEach((video,index)=>{const b=document.createElement("button");b.textContent=`${index+1}. ${video.titulo}`;b.addEventListener("click",()=>{selecionado=index;criarPlayer()});lista.appendChild(b)});
+ selecionado=episodio?videos.findIndex(v=>v.titulo===episodio):0;if(selecionado<0)selecionado=0;atualizarBotoesNavegacao();status.textContent=`${videos.length} vídeo(s).`;criarPlayer();
 }
-menuA1.addEventListener("change",()=>{
-  limparAbaixo(1);const tema=menuA1.value;
-  if(tema==="Pesquisa"){
-    ativarPesquisa(true);videos=[];atualizarBotoesNavegacao();destruirPlayerAtual();return;
-  }
-  ativarPesquisa(false);
-  if(tema){preencherSelect(menuB2,todosVideos.filter(v=>v.tema===tema).map(v=>v.categoria));mostrarGrupo("B2",true);}
-  aplicarFiltros();
-});
-menuB2.addEventListener("change",()=>{
-  limparAbaixo(2);const tema=menuA1.value,categoria=menuB2.value;
-  if(tema&&categoria){preencherSelect(menuC3,todosVideos.filter(v=>v.tema===tema&&v.categoria===categoria).map(v=>v.classificacao));mostrarGrupo("C3",true);}
-  aplicarFiltros();
-});
-menuC3.addEventListener("change",()=>{
-  if(modoPesquisa){
-    if(menuC3.value==="")return;
-    const indice=Number(menuC3.value);
-    if(!Number.isInteger(indice)||indice<0||indice>=videos.length)return;
-    selecionado=indice;criarPlayer();return;
-  }
-  limparAbaixo(3);
-  const tema=menuA1.value,categoria=menuB2.value,classificacao=menuC3.value;
-  if(tema&&categoria&&classificacao){
-    preencherSelect(menuD4,todosVideos.filter(v=>v.tema===tema&&v.categoria===categoria&&v.classificacao===classificacao).map(v=>v.titulo));
-    mostrarGrupo("D4",true);
-  }
-  aplicarFiltros();
-});
+menuA1.addEventListener("change",()=>{limparAbaixo(1);const tema=menuA1.value;if(tema==="Pesquisa"){ativarPesquisa(true);videos=[];atualizarBotoesNavegacao();destruirPlayerAtual();return}ativarPesquisa(false);if(tema){preencherSelect(menuB2,todosVideos.filter(v=>v.tema===tema).map(v=>v.categoria));mostrarGrupo("B2",true)}aplicarFiltros()});
+menuB2.addEventListener("change",()=>{limparAbaixo(2);const tema=menuA1.value,categoria=menuB2.value;if(tema&&categoria){preencherSelect(menuC3,todosVideos.filter(v=>v.tema===tema&&v.categoria===categoria).map(v=>v.classificacao));mostrarGrupo("C3",true)}aplicarFiltros()});
+menuC3.addEventListener("change",()=>{if(modoPesquisa){if(menuC3.value==="")return;const indice=Number(menuC3.value);if(!Number.isInteger(indice)||indice<0||indice>=videos.length)return;selecionado=indice;criarPlayer();return}limparAbaixo(3);const tema=menuA1.value,categoria=menuB2.value,classificacao=menuC3.value;if(tema&&categoria&&classificacao){preencherSelect(menuD4,todosVideos.filter(v=>v.tema===tema&&v.categoria===categoria&&v.classificacao===classificacao).map(v=>v.titulo));mostrarGrupo("D4",true)}aplicarFiltros()});
 menuD4.addEventListener("change",aplicarFiltros);
-
-function limparPlayerPesquisa(){destruirPlayerAtual();}
-function ativarPesquisa(ativar){
-  modoPesquisa=ativar;
-  campoPesquisa.style.display=ativar?"block":"none";
-  menuB2.style.display=ativar?"none":"";
-  mostrarGrupo("B2",ativar);mostrarGrupo("C3",ativar);mostrarGrupo("D4",false);
-  if(ativar){
-    limparPlayerPesquisa();videos=[];selecionado=0;campoPesquisa.value="";
-    menuC3.replaceChildren();
-    const opcao=document.createElement("option");opcao.value="";opcao.textContent="Digite para pesquisar";menuC3.appendChild(opcao);
-    menuC3.disabled=true;atualizarBotoesNavegacao();status.textContent="Digite o nome de um canal ou conteúdo.";campoPesquisa.focus();
-  }else{menuC3.disabled=false;campoPesquisa.value="";}
-}
-function pesquisarConteudo(){
-  if(!modoPesquisa)return;
-  const termo=campoPesquisa.value.trim().toLocaleLowerCase("pt-BR");
-  const encontrados=termo?todosVideos.filter(v=>[v.classificacao,v.titulo].some(valor=>String(valor||"").toLocaleLowerCase("pt-BR").includes(termo))):[];
-  limparPlayerPesquisa();videos=encontrados;selecionado=0;menuC3.replaceChildren();
-  const inicial=document.createElement("option");inicial.value="";
-  inicial.textContent=termo?(encontrados.length?`${encontrados.length} resultado(s) encontrado(s)`:"Nenhum resultado encontrado"):"Digite para pesquisar";
-  menuC3.appendChild(inicial);
-  encontrados.forEach((video,indice)=>{
-    const opcao=document.createElement("option");opcao.value=String(indice);
-    opcao.textContent=[video.classificacao,video.titulo].filter(Boolean).join(" - ");menuC3.appendChild(opcao);
-  });
-  menuC3.disabled=encontrados.length===0;atualizarBotoesNavegacao();
-  status.textContent=encontrados.length?`${encontrados.length} resultado(s). Selecione um conteúdo para reproduzir.`:(termo?"Nenhum conteúdo corresponde à pesquisa.":"Digite o nome de um canal ou conteúdo.");
-}
+function limparPlayerPesquisa(){destruirPlayerAtual()}
+function ativarPesquisa(ativar){modoPesquisa=ativar;campoPesquisa.style.display=ativar?"block":"none";menuB2.style.display=ativar?"none":"";mostrarGrupo("B2",ativar);mostrarGrupo("C3",ativar);mostrarGrupo("D4",false);if(ativar){limparPlayerPesquisa();videos=[];selecionado=0;campoPesquisa.value="";menuC3.replaceChildren();const o=document.createElement("option");o.value="";o.textContent="Digite para pesquisar";menuC3.appendChild(o);menuC3.disabled=true;atualizarBotoesNavegacao();status.textContent="Digite o nome de um canal ou conteúdo.";campoPesquisa.focus()}else{menuC3.disabled=false;campoPesquisa.value=""}}
+function pesquisarConteudo(){if(!modoPesquisa)return;const termo=campoPesquisa.value.trim().toLocaleLowerCase("pt-BR");const encontrados=termo?todosVideos.filter(v=>[v.classificacao,v.titulo].some(x=>String(x||"").toLocaleLowerCase("pt-BR").includes(termo))):[];limparPlayerPesquisa();videos=encontrados;selecionado=0;menuC3.replaceChildren();const inicial=document.createElement("option");inicial.value="";inicial.textContent=termo?(encontrados.length?`${encontrados.length} resultado(s) encontrado(s)`:"Nenhum resultado encontrado"):"Digite para pesquisar";menuC3.appendChild(inicial);encontrados.forEach((video,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=[video.classificacao,video.titulo].filter(Boolean).join(" - ");menuC3.appendChild(o)});menuC3.disabled=encontrados.length===0;atualizarBotoesNavegacao();status.textContent=encontrados.length?`${encontrados.length} resultado(s). Selecione um conteúdo para reproduzir.`:(termo?"Nenhum conteúdo corresponde à pesquisa.":"Digite o nome de um canal ou conteúdo.")}
 campoPesquisa.addEventListener("input",pesquisarConteudo);
-
-function extrairId(valor){
-  try{
-    const url=new URL(valor);
-    if(url.hostname==="youtu.be")return url.pathname.split("/").filter(Boolean)[0]||null;
-    if(!["youtube.com","www.youtube.com","m.youtube.com","youtube-nocookie.com","www.youtube-nocookie.com"].includes(url.hostname))return null;
-    if(url.pathname==="/watch")return url.searchParams.get("v");
-    const partes=url.pathname.split("/").filter(Boolean);
-    if(["embed","shorts","live","v"].includes(partes[0]))return partes[1]||null;
-    return null;
-  }catch(e){return null;}
+function extrairId(valor){try{const url=new URL(valor);if(url.hostname==="youtu.be")return url.pathname.split("/").filter(Boolean)[0]||null;if(!["youtube.com","www.youtube.com","m.youtube.com","youtube-nocookie.com","www.youtube-nocookie.com"].includes(url.hostname))return null;if(url.pathname==="/watch")return url.searchParams.get("v");const p=url.pathname.split("/").filter(Boolean);if(["embed","shorts","live","v"].includes(p[0]))return p[1]||null;return null}catch(e){return null}}
+function extrairHandleCanal(valor){try{const url=new URL(valor);if(!["youtube.com","www.youtube.com","m.youtube.com"].includes(url.hostname.toLowerCase()))return null;const m=url.pathname.match(/^\/@([^/]+)\/live\/?$/i);return m?decodeURIComponent(m[1]):null}catch(e){return null}}
+async function youtubeApi(endpoint,parametros){if(!YOUTUBE_API_KEY||YOUTUBE_API_KEY==="COLE_SUA_CHAVE_DA_API_AQUI")throw new Error("Configure a chave da YouTube Data API v3 no início do arquivo HTML.");const url=new URL("https://www.googleapis.com/youtube/v3/"+endpoint);Object.entries({...parametros,key:YOUTUBE_API_KEY}).forEach(([k,v])=>url.searchParams.set(k,v));const r=await fetch(url.toString()),dados=await r.json().catch(()=>({}));if(!r.ok)throw new Error(dados.error?.message||("Erro da YouTube Data API: HTTP "+r.status));return dados}
+async function resolverTransmissaoAoVivo(item){const handle=item.handle||extrairHandleCanal(item.url);if(!handle)throw new Error("Não foi possível identificar o nome do canal neste endereço.");const canais=await youtubeApi("channels",{part:"id",forHandle:handle,maxResults:"1"}),canalId=canais.items?.[0]?.id;if(!canalId)throw new Error("O canal @"+handle+" não foi encontrado pela YouTube Data API.");const busca=await youtubeApi("search",{part:"id",channelId:canalId,eventType:"live",type:"video",order:"date",maxResults:"1"}),videoId=busca.items?.[0]?.id?.videoId;if(!videoId)throw new Error("O canal @"+handle+" não está transmitindo ao vivo neste momento.");return videoId}
+function criarIframe(url,titulo,geracao,mensagem){
+ const area=document.getElementById("player"),iframe=document.createElement("iframe");iframe.title=titulo||"Player incorporado";iframe.src=url;
+ iframe.allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write";iframe.allowFullscreen=true;iframe.referrerPolicy="strict-origin-when-cross-origin";
+ iframe.style.cssText="display:block;width:100%;height:100%;border:0;background:#000";area.appendChild(iframe);player=iframe;status.textContent=mensagem;
+ iframe.addEventListener("load",()=>{if(geracao===geracaoPlayer)status.textContent="Página aberta no frame. Se o vídeo não aparecer, o site pode bloquear incorporação."});
+ iframe.addEventListener("error",()=>{if(geracao===geracaoPlayer)status.textContent="Falha ao abrir a página no frame. O site pode bloquear incorporação."});
 }
-
-function extrairHandleCanal(valor){
-  try{
-    const url=new URL(valor);
-    if(!["youtube.com","www.youtube.com","m.youtube.com"].includes(url.hostname.toLowerCase()))return null;
-    const match=url.pathname.match(/^\/@([^/]+)\/live\/?$/i);
-    return match?decodeURIComponent(match[1]):null;
-  }catch(e){return null;}
-}
-
-async function youtubeApi(endpoint, parametros){
-  if(!YOUTUBE_API_KEY || YOUTUBE_API_KEY==="COLE_SUA_CHAVE_DA_API_AQUI"){
-    throw new Error("Configure a chave da YouTube Data API v3 no início do arquivo HTML.");
-  }
-  const url=new URL("https://www.googleapis.com/youtube/v3/"+endpoint);
-  Object.entries({...parametros,key:YOUTUBE_API_KEY}).forEach(([k,v])=>url.searchParams.set(k,v));
-  const resposta=await fetch(url.toString());
-  const dados=await resposta.json().catch(()=>({}));
-  if(!resposta.ok)throw new Error(dados.error?.message||("Erro da YouTube Data API: HTTP "+resposta.status));
-  return dados;
-}
-
-async function resolverTransmissaoAoVivo(item){
-  const handle=item.handle||extrairHandleCanal(item.url);
-  if(!handle)throw new Error("Não foi possível identificar o nome do canal neste endereço.");
-  const canais=await youtubeApi("channels",{part:"id",forHandle:handle,maxResults:"1"});
-  const canalId=canais.items?.[0]?.id;
-  if(!canalId)throw new Error("O canal @"+handle+" não foi encontrado pela YouTube Data API.");
-  const busca=await youtubeApi("search",{part:"id",channelId:canalId,eventType:"live",type:"video",order:"date",maxResults:"1"});
-  const videoId=busca.items?.[0]?.id?.videoId;
-  if(!videoId)throw new Error("O canal @"+handle+" não está transmitindo ao vivo neste momento.");
-  return videoId;
-}
-
 function criarPlayer(){
-  if(!videos.length)return;
-  const item=videos[selecionado];if(!item)return;
-  const area=document.getElementById("player"),geracao=++geracaoPlayer;
-  if(ytPlayerApi){try{ytPlayerApi.destroy();}catch(e){}ytPlayerApi=null;}
-  if(hlsInstance){try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
-  area.replaceChildren();player=null;
-
-  // Twitch: incorpora o player oficial. O parâmetro parent deve corresponder
-  // ao domínio em que este HTML está aberto (ex.: localhost ou seu-dominio.github.io).
-  if(item.tipo==="twitch"){
-    const iframe=document.createElement("iframe");
-    iframe.title=item.titulo||"Player Twitch";
-    try{
-      const twitchUrl=new URL(item.url);
-      twitchUrl.searchParams.set("parent",location.hostname);
-      if(!twitchUrl.searchParams.has("autoplay"))twitchUrl.searchParams.set("autoplay","true");
-      iframe.src=twitchUrl.toString();
-    }catch(e){iframe.src=item.url;}
-    iframe.allow="autoplay; fullscreen; picture-in-picture";
-    iframe.allowFullscreen=true;
-    iframe.referrerPolicy="origin";
-    iframe.style.cssText="display:block;width:100%;height:100%;border:0;background:#000;";
-    area.appendChild(iframe);player=iframe;
-    status.textContent="Carregando transmissão Twitch: "+item.titulo;
-    iframe.addEventListener("load",()=>{
-      if(geracao===geracaoPlayer)status.textContent="Player Twitch carregado: "+item.titulo;
-    });
-    iframe.addEventListener("error",()=>{
-      if(geracao===geracaoPlayer)status.textContent="Não foi possível carregar o player Twitch. Confira o parâmetro parent e a transmissão.";
-    });
-    return;
-  }
-// Restream: incorpora a página oficial do player.
-if(item.tipo==="restream"){
-    const iframe=document.createElement("iframe");
-    iframe.title=item.titulo||"Player Restream";
-    iframe.src=item.url;
-    iframe.allow="autoplay; fullscreen; picture-in-picture; encrypted-media";
-    iframe.allowFullscreen=true;
-    iframe.referrerPolicy="strict-origin-when-cross-origin";
-    iframe.style.cssText="display:block;width:100%;height:100%;border:0;background:#000;";
-
-    area.appendChild(iframe);
-    player=iframe;
-
-    status.textContent="Carregando transmissão Restream: "+item.titulo;
-
-    iframe.addEventListener("load",()=>{
-        if(geracao!==geracaoPlayer)return;
-
-        status.textContent="Player Restream carregado: "+item.titulo;
-
-        // Aguarda 1 segundo após carregar o Restream.
-        setTimeout(()=>{
-            if(geracao!==geracaoPlayer)return;
-
-            iframe.contentWindow.postMessage("mude=true","*");
-        },10000);
-    });
-
-    iframe.addEventListener("error",()=>{
-        if(geracao===geracaoPlayer)
-            status.textContent="Não foi possível carregar o player Restream.";
-    });
-
-    return;
+ if(!videos.length)return;const item=videos[selecionado];if(!item)return;const area=document.getElementById("player"),geracao=++geracaoPlayer;
+ if(ytPlayerApi){try{ytPlayerApi.destroy()}catch(e){}ytPlayerApi=null}if(hlsInstance){try{hlsInstance.destroy()}catch(e){}hlsInstance=null}area.replaceChildren();player=null;
+ if(item.tipo==="twitch"){let twitchUrl;try{twitchUrl=new URL(item.url);twitchUrl.searchParams.set("parent",location.hostname);if(!twitchUrl.searchParams.has("autoplay"))twitchUrl.searchParams.set("autoplay","true")}catch(e){twitchUrl=new URL(item.url)}criarIframe(twitchUrl.toString(),item.titulo,geracao,"Carregando transmissão Twitch: "+item.titulo);return}
+ if(item.tipo==="restream"||item.tipo==="iframe"){criarIframe(item.url,item.titulo,geracao,item.tipo==="restream"?"Carregando transmissão Restream: "+item.titulo:"Abrindo página/player: "+item.titulo);if(item.tipo==="restream"){const iframe=player;iframe.addEventListener("load",()=>{if(geracao===geracaoPlayer)setTimeout(()=>{if(geracao===geracaoPlayer){try{iframe.contentWindow.postMessage("mude=true","*")}catch(e){}}},10000)})}return}
+ if(item.tipo==="hls"||/\.m3u8(?:$|[?#])/i.test(item.url)){
+  const videoEl=document.createElement("video");videoEl.title=item.titulo;videoEl.controls=true;videoEl.autoplay=true;videoEl.playsInline=true;videoEl.preload="metadata";videoEl.style.cssText="display:block;width:100%;height:100%;object-fit:contain;background:#000";area.appendChild(videoEl);player=videoEl;
+  videoEl.addEventListener("error",()=>{const e=videoEl.error;console.error("Erro do elemento de vídeo:",{code:e?.code,message:e?.message,url:item.url});if(e)status.textContent="Erro no vídeo (código "+e.code+")."});
+  if(window.Hls&&Hls.isSupported()){hlsInstance=new Hls({enableWorker:true,lowLatencyMode:false,backBufferLength:30,manifestLoadingTimeOut:20000,manifestLoadingMaxRetry:3,manifestLoadingRetryDelay:1000,levelLoadingTimeOut:20000,fragLoadingTimeOut:30000,fragLoadingMaxRetry:4,fragLoadingRetryDelay:1000});hlsInstance.on(Hls.Events.MANIFEST_PARSED,()=>{videoEl.play().then(()=>status.textContent="Transmissão HLS reproduzindo.").catch(()=>status.textContent="Transmissão carregada. Pressione Play no vídeo.")});let rede=false,midia=false;hlsInstance.on(Hls.Events.ERROR,(_event,data)=>{console.error("Erro HLS:",data);if(!data.fatal)return;registrarFalha(item,"M3U8/HLS",data.details||data.error?.message||"Erro HLS fatal",data.response?.code||data.details||"");if(data.type===Hls.ErrorTypes.NETWORK_ERROR&&!rede){rede=true;hlsInstance.startLoad()}else if(data.type===Hls.ErrorTypes.MEDIA_ERROR&&!midia){midia=true;hlsInstance.recoverMediaError()}else{status.textContent="Falha HLS: "+data.details;try{hlsInstance.destroy()}catch(e){}hlsInstance=null}});hlsInstance.loadSource(item.url);hlsInstance.attachMedia(videoEl)}
+  else if(videoEl.canPlayType("application/vnd.apple.mpegurl")){videoEl.src=item.url;videoEl.play().catch(()=>status.textContent="Transmissão carregada. Pressione Play no vídeo.")}else status.textContent="Este navegador não oferece suporte à reprodução HLS.";return;
+ }
+ let videoId=item.id;if(item.tipo==="youtube-channel"){status.textContent="Localizando a transmissão ao vivo de "+item.titulo+"…";resolverTransmissaoAoVivo(item).then(id=>{if(geracao!==geracaoPlayer)return;montarPlayerYouTube(item,id,geracao,area)}).catch(erro=>{if(geracao!==geracaoPlayer)return;status.textContent="Não foi possível localizar a live: "+erro.message;registrarFalha(item,"YouTube Data API",erro.message,"CANAL_LIVE")});return}
+ montarPlayerYouTube(item,videoId,geracao,area);
 }
-
-  if(item.tipo==="hls"||/\.m3u8(?:$|[?#])/i.test(item.url)){
-    const videoEl=document.createElement("video");
-    videoEl.title=item.titulo;videoEl.controls=true;videoEl.autoplay=true;videoEl.playsInline=true;videoEl.preload="metadata";
-    videoEl.style.cssText="display:block;width:100%;height:100%;object-fit:contain;background:#000;";
-    area.appendChild(videoEl);player=videoEl;
-    videoEl.addEventListener("error",()=>{
-      const e=videoEl.error;console.error("Erro do elemento de vídeo:",{code:e?.code,message:e?.message,url:item.url});
-      if(e)status.textContent="Erro no vídeo (código "+e.code+").";
-    });
-    if(window.Hls&&Hls.isSupported()){
-      hlsInstance=new Hls({enableWorker:true,lowLatencyMode:false,backBufferLength:30,manifestLoadingTimeOut:20000,manifestLoadingMaxRetry:3,manifestLoadingRetryDelay:1000,levelLoadingTimeOut:20000,fragLoadingTimeOut:30000,fragLoadingMaxRetry:4,fragLoadingRetryDelay:1000});
-      hlsInstance.on(Hls.Events.MANIFEST_PARSED,()=>{
-        videoEl.play().then(()=>{status.textContent="Transmissão HLS reproduzindo.";}).catch(()=>{status.textContent="Transmissão carregada. Pressione Play no vídeo.";});
-      });
-      let rede=false,midia=false;
-      hlsInstance.on(Hls.Events.ERROR,(_event,data)=>{
-        console.error("Erro HLS:",data);
-        if(!data.fatal)return;
-        registrarFalha(item,"M3U8/HLS",data.details||data.error?.message||"Erro HLS fatal",data.response?.code||data.details||"");
-        if(data.type===Hls.ErrorTypes.NETWORK_ERROR&&!rede){rede=true;hlsInstance.startLoad();}
-        else if(data.type===Hls.ErrorTypes.MEDIA_ERROR&&!midia){midia=true;hlsInstance.recoverMediaError();}
-        else{status.textContent="Falha HLS: "+data.details;try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
-      });
-      hlsInstance.loadSource(item.url);hlsInstance.attachMedia(videoEl);
-    }else if(videoEl.canPlayType("application/vnd.apple.mpegurl")){
-      videoEl.src=item.url;videoEl.play().catch(()=>{status.textContent="Transmissão carregada. Pressione Play no vídeo.";});
-    }else status.textContent="Este navegador não oferece suporte à reprodução HLS.";
-    return;
-  }
-
-  let videoId=item.id;
-  if(item.tipo==="youtube-channel"){
-    status.textContent="Localizando a transmissão ao vivo de "+item.titulo+"…";
-    resolverTransmissaoAoVivo(item).then(id=>{
-      if(geracao!==geracaoPlayer)return;
-      videoId=id;
-      montarPlayerYouTube(item,videoId,geracao,area);
-    }).catch(erro=>{
-      if(geracao!==geracaoPlayer)return;
-      status.textContent="Não foi possível localizar a live: "+erro.message;
-      registrarFalha(item,"YouTube Data API",erro.message,"CANAL_LIVE");
-    });
-    return;
-  }
-  montarPlayerYouTube(item,videoId,geracao,area);
-}
-
 function montarPlayerYouTube(item,videoId,geracao,area){
-  const container=document.createElement("div");container.id="youtube-player-container-"+geracao;
-  container.style.cssText="width:100%;height:100%;background:#000;";area.appendChild(container);
-  status.textContent="Carregando player do YouTube…";
-  carregarYouTubeAPI().then(()=>{
-    if(geracao!==geracaoPlayer||!area.contains(container))return;
-    ytPlayerApi=new YT.Player(container.id,{
-      width:"100%",height:"100%",videoId:videoId,
-      playerVars:{autoplay:1,playsinline:1,rel:0,enablejsapi:1,origin:location.origin},
-      events:{
-        onReady:event=>{status.textContent="Player do YouTube carregado.";event.target.playVideo();},
-        onStateChange:event=>{if(event.data===YT.PlayerState.PLAYING)status.textContent="Reproduzindo: "+item.titulo;},
-        onError:event=>{
-          const mensagens={2:"Parâmetro ou ID de vídeo inválido",5:"Erro no player HTML5 do YouTube",100:"Vídeo removido, privado ou não encontrado",101:"Vídeo não permite reprodução incorporada",150:"Vídeo não permite reprodução incorporada",153:"Erro de identificação do player ou Referer"};
-          status.textContent="Falha no canal: "+item.titulo+". Código "+event.data;
-          registrarFalha(item,"YouTube",mensagens[event.data]||"Erro informado pelo player do YouTube",event.data);
-        }
-      }
-    });
-    player=ytPlayerApi;
-  }).catch(erro=>{
-    if(geracao!==geracaoPlayer)return;
-    const detalhe=erro && erro.message ? erro.message : String(erro||"erro desconhecido");
-    status.textContent="Falha ao carregar o player do YouTube: "+detalhe+". Confira se youtube.com não está bloqueado pela rede, navegador ou extensão.";
-    registrarFalha(item,"YouTube",detalhe,"API");
-  });
+ const container=document.createElement("div");container.id="youtube-player-container-"+geracao;container.style.cssText="width:100%;height:100%;background:#000";area.appendChild(container);status.textContent="Carregando player do YouTube…";
+ carregarYouTubeAPI().then(()=>{if(geracao!==geracaoPlayer||!area.contains(container))return;ytPlayerApi=new YT.Player(container.id,{width:"100%",height:"100%",videoId:videoId,playerVars:{autoplay:1,playsinline:1,rel:0,enablejsapi:1,origin:location.origin},events:{onReady:event=>{status.textContent="Player do YouTube carregado.";event.target.playVideo()},onStateChange:event=>{if(event.data===YT.PlayerState.PLAYING)status.textContent="Reproduzindo: "+item.titulo},onError:event=>{const mensagens={2:"Parâmetro ou ID de vídeo inválido",5:"Erro no player HTML5 do YouTube",100:"Vídeo removido, privado ou não encontrado",101:"Vídeo não permite reprodução incorporada",150:"Vídeo não permite reprodução incorporada",153:"Erro de identificação do player ou Referer"};status.textContent="Falha no canal: "+item.titulo+". Código "+event.data;registrarFalha(item,"YouTube",mensagens[event.data]||"Erro informado pelo player do YouTube",event.data)}}});player=ytPlayerApi}).catch(erro=>{if(geracao!==geracaoPlayer)return;const detalhe=erro?.message||String(erro||"erro desconhecido");status.textContent="Falha ao carregar o player do YouTube: "+detalhe+". Confira se youtube.com não está bloqueado pela rede, navegador ou extensão.";registrarFalha(item,"YouTube",detalhe,"API")});
 }
-
 function processarLista(texto){
-  todosVideos=texto.split(/\r?\n/).map(l=>l.trim()).filter(l=>l&&!l.startsWith("#")).map((linha,indice)=>{
-    const partes=linha.split("|").map(p=>p.trim());
-    let tema,categoria,classificacao,titulo,url;
-    if(partes.length>=5){[tema,categoria,classificacao,titulo]=partes;url=partes.slice(4).join("|").trim();}
-    else if(partes.length>=3){
-      const temaAntigo=partes[0]||"Geral";titulo=partes[1]||"Vídeo "+(indice+1);url=partes.slice(2).join("|").trim();
-      tema=/bíblic|preg|igreja|relig|estudo/i.test(temaAntigo+" "+titulo)?"religioso":"normal";
-      categoria=/live|ao vivo|rádio|radio|notícia|cnn|jovem pan|record news|sbt news/i.test(titulo+" "+url)?"live":"filmes";
-      classificacao=temaAntigo;
-    }else if(partes.length===2){titulo=partes[0]||"Vídeo "+(indice+1);url=partes[1];tema="normal";categoria="filmes";classificacao="Geral";}
-    else{titulo="Vídeo "+(indice+1);url=partes[0];tema="normal";categoria="filmes";classificacao="Geral";}
-    tema=tema||"Normal";categoria=categoria||"Filmes";classificacao=classificacao||"Geral";titulo=titulo||"Vídeo "+(indice+1);
-    const id=extrairId(url);
-    const handle=extrairHandleCanal(url);
-    let tipo="desconhecido";
-    try{
-      const host=new URL(url).hostname.toLowerCase();
-      if(host==="player.twitch.tv"||host==="twitch.tv"||host==="www.twitch.tv")tipo="twitch";
-      else if(host==="restream.io"||host.endsWith(".restream.io"))tipo="restream";
-      else if(/\.m3u8(?:$|[?#])/i.test(url))tipo="hls";
-      else if(handle)tipo="youtube-channel";
-      else if(id)tipo="youtube";
-    }catch(e){}
-    if(tipo==="hls"||tipo==="restream"||tipo==="twitch")return{tema,categoria,classificacao,titulo,id:null,url,tipo};
-    if(tipo==="youtube-channel")return{tema,categoria,classificacao,titulo,id:null,url,tipo,handle};
-    return tipo==="youtube"?{tema,categoria,classificacao,titulo,id,url,tipo}:null;
-  }).filter(Boolean);
-  const temas=[...new Set(todosVideos.map(v=>v.tema).filter(Boolean))].filter(tema=>tema!=="Pesquisa").sort((a,b)=>a.localeCompare(b,"pt-BR"));
-  menuA1.replaceChildren();
-  const opcaoPesquisa=document.createElement("option");opcaoPesquisa.value="Pesquisa";opcaoPesquisa.textContent="Pesquisa";menuA1.appendChild(opcaoPesquisa);
-  temas.forEach(tema=>{const opcao=document.createElement("option");opcao.value=tema;opcao.textContent=tema;menuA1.appendChild(opcao);});
-  menuA1.value="";limparAbaixo(1);aplicarFiltros();
-  document.getElementById("seletorLista").style.display="none";
-  document.getElementById("mensagemLista").textContent="";
-  status.textContent=`Lista carregada: ${todosVideos.length} conteúdo(s).`;
+ todosVideos=texto.split(/\r?\n/).map(l=>l.trim()).filter(l=>l&&!l.startsWith("#")).map((linha,indice)=>{
+  const partes=linha.split("|").map(p=>p.trim());let tema,categoria,classificacao,titulo,url;
+  if(partes.length>=5){[tema,categoria,classificacao,titulo]=partes;url=partes.slice(4).join("|").trim()}
+  else if(partes.length>=3){const temaAntigo=partes[0]||"Geral";titulo=partes[1]||"Vídeo "+(indice+1);url=partes.slice(2).join("|").trim();tema=/bíblic|preg|igreja|relig|estudo/i.test(temaAntigo+" "+titulo)?"religioso":"normal";categoria=/live|ao vivo|rádio|radio|notícia|cnn|jovem pan|record news|sbt news/i.test(titulo+" "+url)?"live":"filmes";classificacao=temaAntigo}
+  else if(partes.length===2){titulo=partes[0]||"Vídeo "+(indice+1);url=partes[1];tema="normal";categoria="filmes";classificacao="Geral"}
+  else{titulo="Vídeo "+(indice+1);url=partes[0];tema="normal";categoria="filmes";classificacao="Geral"}
+  tema=tema||"Normal";categoria=categoria||"Filmes";classificacao=classificacao||"Geral";titulo=titulo||"Vídeo "+(indice+1);
+  const id=extrairId(url),handle=extrairHandleCanal(url);let tipo="desconhecido";
+  try{const endereco=new URL(url),host=endereco.hostname.toLowerCase();if(!["http:","https:"].includes(endereco.protocol))return null;
+   if(host==="player.twitch.tv"||host==="twitch.tv"||host==="www.twitch.tv")tipo="twitch";
+   else if(host==="restream.io"||host.endsWith(".restream.io"))tipo="restream";
+   else if(/\.m3u8(?:$|[?#])/i.test(url))tipo="hls";
+   else if(handle)tipo="youtube-channel";else if(id)tipo="youtube";else tipo="iframe";
+  }catch(e){return null}
+  if(["hls","restream","twitch","iframe"].includes(tipo))return{tema,categoria,classificacao,titulo,id:null,url,tipo};
+  if(tipo==="youtube-channel")return{tema,categoria,classificacao,titulo,id:null,url,tipo,handle};
+  return tipo==="youtube"?{tema,categoria,classificacao,titulo,id,url,tipo}:null;
+ }).filter(Boolean);
+ const temas=[...new Set(todosVideos.map(v=>v.tema).filter(Boolean))].filter(t=>t!=="Pesquisa").sort((a,b)=>a.localeCompare(b,"pt-BR"));
+ menuA1.replaceChildren();const pesquisa=document.createElement("option");pesquisa.value="Pesquisa";pesquisa.textContent="Pesquisa";menuA1.appendChild(pesquisa);
+ temas.forEach(tema=>{const o=document.createElement("option");o.value=tema;o.textContent=tema;menuA1.appendChild(o)});
+ menuA1.value="";limparAbaixo(1);aplicarFiltros();document.getElementById("seletorLista").style.display="none";document.getElementById("mensagemLista").textContent="";status.textContent=`Lista carregada: ${todosVideos.length} conteúdo(s).`;
 }
-
-const arquivoPlaylist=document.getElementById("arquivoPlaylist");
-const seletorLista=document.getElementById("seletorLista");
-function abrirSeletorLista(){seletorLista.style.display="flex";document.getElementById("mensagemLista").textContent="Selecione o arquivo playlist.txt.";}
+const arquivoPlaylist=document.getElementById("arquivoPlaylist"),seletorLista=document.getElementById("seletorLista");
+function abrirSeletorLista(){seletorLista.style.display="flex";document.getElementById("mensagemLista").textContent="Selecione o arquivo playlist.txt."}
 document.getElementById("trocarPlaylist").addEventListener("click",abrirSeletorLista);
 const botaoCarregarArquivo=document.getElementById("carregarArquivoPlaylist");
-arquivoPlaylist.addEventListener("change",()=>{
-  const arquivo=arquivoPlaylist.files&&arquivoPlaylist.files[0];
-  botaoCarregarArquivo.disabled=!arquivo;
-  document.getElementById("mensagemLista").textContent=arquivo?"Arquivo selecionado: "+arquivo.name+". Agora clique em CARREGAR LISTA.":"Nenhuma lista selecionada.";
-});
-botaoCarregarArquivo.addEventListener("click",async()=>{
-  const arquivo=arquivoPlaylist.files&&arquivoPlaylist.files[0];
-  if(!arquivo){document.getElementById("mensagemLista").textContent="Primeiro escolha o arquivo playlist.txt.";return;}
-  const mensagem=document.getElementById("mensagemLista");mensagem.textContent="Lendo "+arquivo.name+"…";
-  try{
-    const texto=await arquivo.text();
-    if(!texto.trim())throw new Error("O arquivo está vazio.");
-    processarLista(texto);
-  }catch(erro){
-    console.error(erro);mensagem.textContent="Erro ao carregar "+arquivo.name+": "+(erro.message||"erro desconhecido");
-  }
-});
+arquivoPlaylist.addEventListener("change",()=>{const arquivo=arquivoPlaylist.files&&arquivoPlaylist.files[0];botaoCarregarArquivo.disabled=!arquivo;document.getElementById("mensagemLista").textContent=arquivo?"Arquivo selecionado: "+arquivo.name+". Agora clique em CARREGAR LISTA.":"Nenhuma lista selecionada."});
+botaoCarregarArquivo.addEventListener("click",async()=>{const arquivo=arquivoPlaylist.files&&arquivoPlaylist.files[0];if(!arquivo){document.getElementById("mensagemLista").textContent="Primeiro escolha o arquivo playlist.txt.";return}const mensagem=document.getElementById("mensagemLista");mensagem.textContent="Lendo "+arquivo.name+"…";try{const texto=await arquivo.text();if(!texto.trim())throw new Error("O arquivo está vazio.");processarLista(texto)}catch(erro){console.error(erro);mensagem.textContent="Erro ao carregar "+arquivo.name+": "+(erro.message||"erro desconhecido")}});
 </script>
 </body>
 </html>

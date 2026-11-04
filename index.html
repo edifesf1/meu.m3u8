@@ -349,14 +349,56 @@ async function youtubeApi(endpoint, parametros){
 
 async function resolverTransmissaoAoVivo(item){
   const handle=item.handle||extrairHandleCanal(item.url);
-  if(!handle)throw new Error("Não foi possível identificar o nome do canal neste endereço.");
-  const canais=await youtubeApi("channels",{part:"id",forHandle:handle,maxResults:"1"});
+
+  if(!handle)
+    throw new Error("Não foi possível identificar o nome do canal neste endereço.");
+
+  const canais=await youtubeApi("channels",{
+    part:"id",
+    forHandle:handle,
+    maxResults:"1"
+  });
+
   const canalId=canais.items?.[0]?.id;
-  if(!canalId)throw new Error("O canal @"+handle+" não foi encontrado pela YouTube Data API.");
-  const busca=await youtubeApi("search",{part:"id",channelId:canalId,eventType:"live",type:"video",order:"date",maxResults:"1"});
-  const videoId=busca.items?.[0]?.id?.videoId;
-  if(!videoId)throw new Error("O canal @"+handle+" não está transmitindo ao vivo neste momento.");
-  return videoId;
+
+  if(!canalId)
+    throw new Error("O canal @"+handle+" não foi encontrado pela YouTube Data API.");
+
+  // Primeiro: procura uma transmissão ao vivo.
+  const buscaLive=await youtubeApi("search",{
+    part:"id",
+    channelId:canalId,
+    eventType:"live",
+    type:"video",
+    order:"date",
+    maxResults:"1"
+  });
+
+  const videoLive=buscaLive.items?.[0]?.id?.videoId;
+
+  if(videoLive){
+    return videoLive;
+  }
+
+  // Se não houver live, procura a última transmissão encerrada.
+  const buscaGravada=await youtubeApi("search",{
+    part:"id",
+    channelId:canalId,
+    eventType:"completed",
+    type:"video",
+    order:"date",
+    maxResults:"1"
+  });
+
+  const ultimaLive=buscaGravada.items?.[0]?.id?.videoId;
+
+  if(ultimaLive){
+    return ultimaLive;
+  }
+
+  throw new Error(
+    "Nenhuma transmissão ao vivo ou gravação de live encontrada."
+  );
 }
 
 function criarPlayer(){

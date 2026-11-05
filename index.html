@@ -456,26 +456,67 @@ function criarPlayer(){
     });
     return;
   }
-// Restream: incorpora a página oficial do player.
+// Player externo. Para RDCanais, habilita autoplay e devolve o foco
+// ao menu 6 (seta de próximo canal), sem retirar o iframe nem parar o vídeo.
 if(item.tipo==="frame"){
     const iframe=document.createElement("iframe");
     iframe.title=item.titulo||"Player externo";
-    iframe.src=item.url;
+
+    let url=item.url;
+    let ehRDCanais=false;
+
+    try{
+      const endereco=new URL(url);
+      const host=endereco.hostname.toLowerCase();
+
+      ehRDCanais=host==="rdcanais.org" || host==="www.rdcanais.org";
+
+      if(ehRDCanais){
+        endereco.searchParams.set("autoplay","1");
+        endereco.searchParams.set("mute","0");
+      }
+
+      url=endereco.toString();
+    }catch(e){}
+
+    iframe.src=url;
     iframe.allow="autoplay; fullscreen; picture-in-picture; encrypted-media";
     iframe.allowFullscreen=true;
     iframe.referrerPolicy="strict-origin-when-cross-origin";
     iframe.style.cssText="display:block;width:100%;height:100%;border:0;background:#000;";
+
     area.appendChild(iframe);
     player=iframe;
-    status.textContent="Carregando player externo: "+item.titulo;
+
+    status.textContent=ehRDCanais
+      ?"Carregando player RDCanais: "+item.titulo
+      :"Carregando player externo: "+item.titulo;
+
     iframe.addEventListener("load",()=>{
-      if(geracao===geracaoPlayer){
-        status.textContent="Página externa carregada. Se o vídeo não aparecer, o site pode bloquear a exibição em frame.";
+      if(geracao!==geracaoPlayer)return;
+
+      status.textContent=ehRDCanais
+        ?"Player RDCanais carregado: "+item.titulo
+        :"Página externa carregada. Se o vídeo não aparecer, o site pode bloquear a exibição em frame.";
+
+      if(ehRDCanais){
+        // O foco volta para a seta ▶ da tarja vermelha.
+        // Não alteramos o iframe: a reprodução continua normalmente.
+        setTimeout(()=>{
+          if(geracao!==geracaoPlayer)return;
+          try{
+            botaoProximoCanal.focus({preventScroll:true});
+          }catch(e){
+            try{botaoProximoCanal.focus();}catch(erro){}
+          }
+        },500);
       }
     });
+
     iframe.addEventListener("error",()=>{
       if(geracao===geracaoPlayer)status.textContent="Não foi possível carregar a página externa no frame.";
     });
+
     return;
   }
 

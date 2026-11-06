@@ -280,6 +280,15 @@ function criarIframeExterno(item,geracao,urlFinal,urlOriginal){
   iframe.allowFullscreen=true;
   iframe.referrerPolicy="strict-origin-when-cross-origin";
   iframe.setAttribute("allowtransparency","true");
+
+  // TESTE: restringe pop-ups, modais nativos e navegação para fora do iframe.
+  // Mantém JavaScript, formulários e a origem do player para tentar preservar o vídeo.
+  // Não consegue remover janelas HTML criadas dentro do próprio site externo.
+  iframe.setAttribute(
+    "sandbox",
+    "allow-scripts allow-same-origin allow-forms allow-presentation"
+  );
+
   iframe.tabIndex=0;
 
   iframe.style.cssText=

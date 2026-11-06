@@ -146,6 +146,7 @@ let hlsInstance = null;
 let ytPlayerApi = null;
 let player = null;
 let geracaoPlayer = 0;
+let temporizadorPlayerExterno = null;
 let modoPesquisa = false;
 const menuA1 = document.getElementById("menuA1");
 const menuB2 = document.getElementById("menuB2");
@@ -230,12 +231,169 @@ function limparAbaixo(nivel){
   if(nivel<=2){menuC3.value="";mostrarGrupo("C3",false);}
   if(nivel<=3){menuD4.value="";mostrarGrupo("D4",false);}
 }
+function limparTemporizadorPlayerExterno(){
+  if(temporizadorPlayerExterno !== null){
+    clearTimeout(temporizadorPlayerExterno);
+    temporizadorPlayerExterno = null;
+  }
+}
+
 function destruirPlayerAtual(){
+  limparTemporizadorPlayerExterno();
+
   geracaoPlayer++;
-  if(hlsInstance){try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
-  if(ytPlayerApi){try{ytPlayerApi.destroy();}catch(e){}ytPlayerApi=null;}
+
+  if(hlsInstance){
+    try{hlsInstance.destroy();}catch(e){}
+    hlsInstance=null;
+  }
+
+  if(ytPlayerApi){
+    try{ytPlayerApi.destroy();}catch(e){}
+    ytPlayerApi=null;
+  }
+
   document.getElementById("player").replaceChildren();
   player=null;
+}
+
+// Verifica exclusivamente o endereço original da playlist.
+function temAutoplayLiberado(url){
+  try{
+    return new URL(url,location.href).searchParams.get("autoplay")==="1";
+  }catch(e){
+    return /(?:[?&])autoplay=1(?:&|#|$)/i.test(String(url));
+  }
+}
+
+// Cria e controla os players externos.
+function criarIframeExterno(item,geracao,urlFinal,urlOriginal){
+
+  const area=document.getElementById("player");
+  const iframe=document.createElement("iframe");
+
+  const liberarClique=temAutoplayLiberado(urlOriginal);
+
+  iframe.title=item.titulo||"Player externo";
+  iframe.src=urlFinal;
+  iframe.allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write";
+  iframe.allowFullscreen=true;
+  iframe.referrerPolicy="strict-origin-when-cross-origin";
+  iframe.setAttribute("allowtransparency","true");
+  iframe.tabIndex=0;
+
+  iframe.style.cssText=
+    "display:block;width:100%;height:100%;border:0;background:#000;";
+
+  if(!liberarClique){
+
+    const moldura=document.createElement("div");
+
+    moldura.style.cssText=
+      "position:absolute;inset:0;width:100%;height:100%;overflow:hidden;background:#000;";
+
+    const bloqueio=document.createElement("div");
+
+    bloqueio.setAttribute("aria-label","Controles internos bloqueados");
+    bloqueio.setAttribute("role","presentation");
+
+    bloqueio.style.cssText=[
+      "position:absolute",
+      "inset:0",
+      "z-index:5",
+      "background:transparent",
+      "pointer-events:none",
+      "outline:none",
+      "cursor:default"
+    ].join(";");
+
+    let bloqueioAtivo=false;
+
+    function iniciarContagem(){
+
+      if(
+        bloqueioAtivo ||
+        temporizadorPlayerExterno!==null
+      )return;
+
+      temporizadorPlayerExterno=setTimeout(()=>{
+
+        temporizadorPlayerExterno=null;
+
+        if(
+          geracao!==geracaoPlayer ||
+          !area.contains(moldura)
+        )return;
+
+        bloqueioAtivo=true;
+        bloqueio.style.pointerEvents="auto";
+
+        try{iframe.blur();}catch(e){}
+
+        status.textContent=
+          "Player externo iniciado. Navegação interna bloqueada.";
+
+        console.log(
+          "Bloqueio do player externo ativado:",
+          item.titulo
+        );
+
+      },2500);
+    }
+
+    iframe.addEventListener("focus",iniciarContagem);
+    iframe.addEventListener("pointerdown",iniciarContagem);
+
+    moldura.appendChild(iframe);
+    moldura.appendChild(bloqueio);
+
+    area.appendChild(moldura);
+
+  }else{
+
+    area.appendChild(iframe);
+
+    console.log(
+      "Interação liberada para player externo:",
+      item.titulo
+    );
+  }
+
+  player=iframe;
+
+  status.textContent=
+    "Carregando player externo: "+item.titulo;
+
+iframe.addEventListener("load",()=>{
+
+  if(geracao!==geracaoPlayer)return;
+
+  status.textContent=
+    "Player externo carregado: "+item.titulo;
+
+  // Mantém o comando especial que já existia no Restream.
+  if(item.tipo==="restream"){
+
+    setTimeout(()=>{
+
+      if(geracao!==geracaoPlayer)return;
+
+      try{
+        iframe.contentWindow.postMessage("mude=true","*");
+      }catch(e){
+        console.warn("Não foi possível enviar o comando ao Restream.",e);
+      }
+
+    },10000);
+  }
+});
+
+  iframe.addEventListener("error",()=>{
+    if(geracao!==geracaoPlayer)return;
+
+    status.textContent=
+      "Não foi possível carregar o player externo.";
+  });
 }
 function aplicarFiltros(){
   const tema=menuA1.value,categoria=menuB2.value,classificacao=menuC3.value,episodio=menuD4.value;
@@ -425,136 +583,117 @@ async function resolverTransmissaoAoVivo(item){
 
 function criarPlayer(){
   if(!videos.length)return;
-  const item=videos[selecionado];if(!item)return;
-  const area=document.getElementById("player"),geracao=++geracaoPlayer;
+
+  const item=videos[selecionado];
+  if(!item)return;
+
+  limparTemporizadorPlayerExterno();
+
+  const area=document.getElementById("player");
+  const geracao=++geracaoPlayer;
   if(ytPlayerApi){try{ytPlayerApi.destroy();}catch(e){}ytPlayerApi=null;}
   if(hlsInstance){try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
   area.replaceChildren();player=null;
 
-  // Twitch: incorpora o player oficial. O parâmetro parent deve corresponder
-  // ao domínio em que este HTML está aberto (ex.: localhost ou seu-dominio.github.io).
-  if(item.tipo==="twitch"){
-    const iframe=document.createElement("iframe");
-    iframe.title=item.titulo||"Player Twitch";
-    try{
-      const twitchUrl=new URL(item.url);
-      twitchUrl.searchParams.set("parent",location.hostname);
-      if(!twitchUrl.searchParams.has("autoplay"))twitchUrl.searchParams.set("autoplay","true");
-      iframe.src=twitchUrl.toString();
-    }catch(e){iframe.src=item.url;}
-    iframe.allow="autoplay; fullscreen; picture-in-picture";
-    iframe.allowFullscreen=true;
-    iframe.referrerPolicy="origin";
-    iframe.style.cssText="display:block;width:100%;height:100%;border:0;background:#000;";
-    area.appendChild(iframe);player=iframe;
-    status.textContent="Carregando transmissão Twitch: "+item.titulo;
-    iframe.addEventListener("load",()=>{
-      if(geracao===geracaoPlayer)status.textContent="Player Twitch carregado: "+item.titulo;
-    });
-    iframe.addEventListener("error",()=>{
-      if(geracao===geracaoPlayer)status.textContent="Não foi possível carregar o player Twitch. Confira o parâmetro parent e a transmissão.";
-    });
-    return;
-  }
-// Player externo. Para RDCanais, habilita autoplay e devolve o foco
-// ao menu 6 (seta de próximo canal), sem retirar o iframe nem parar o vídeo.
-if(item.tipo==="frame"){
-    const iframe=document.createElement("iframe");
-    iframe.title=item.titulo||"Player externo";
+// PLAYERS EXTERNOS UNIFICADOS
+// Twitch, Restream, RDCanais, RedeCanais,
+// NPHd, EmbedTV e demais páginas externas.
 
-    let url=item.url;
-    let ehRDCanais=false;
+if(
+  item.tipo==="twitch" ||
+  item.tipo==="restream" ||
+  item.tipo==="frame" ||
+  item.tipo==="iframe"
+){
 
-    try{
-      const endereco=new URL(url);
-      const host=endereco.hostname.toLowerCase();
+  let url=String(item.url||"").trim().replace(/\\&/g,"&");
 
-      ehRDCanais=host==="rdcanais.org" || host==="www.rdcanais.org";
+  // Guardamos a URL original antes de qualquer modificação.
+  const urlOriginal=url;
 
-      if(ehRDCanais){
-        endereco.searchParams.set("autoplay","1");
-        endereco.searchParams.set("mute","0");
+  try{
+
+    const endereco=new URL(url);
+
+    const host=endereco.hostname.toLowerCase();
+
+    // Configuração especial da Twitch.
+    if(item.tipo==="twitch"){
+
+      let canal=endereco.searchParams.get("channel");
+
+      if(!canal){
+
+        const partes=endereco.pathname.split("/").filter(Boolean);
+
+        canal=partes[0]||"";
       }
+
+      if(!canal){
+        throw new Error("Não foi possível identificar o canal da Twitch.");
+      }
+
+      const twitchUrl=new URL("https://player.twitch.tv/");
+
+      twitchUrl.searchParams.set("channel",canal);
+      twitchUrl.searchParams.set("parent",location.hostname);
+      twitchUrl.searchParams.set("autoplay","true");
+      twitchUrl.searchParams.set("muted","false");
+      twitchUrl.searchParams.set("controls","true");
+
+      url=twitchUrl.toString();
+    }
+
+    // Configuração especial do RDCanais e RedeCanais.
+    else if(
+      /(^|\.)rdcanais\.org$/i.test(host) ||
+      /(^|\.)redecanais\.by$/i.test(host)
+    ){
+
+      // Não acrescentamos autoplay=1 automaticamente.
+      // Apenas mantemos a configuração de áudio.
+      endereco.searchParams.set("mute","0");
 
       url=endereco.toString();
-    }catch(e){}
+    }
 
-    iframe.src=url;
-    iframe.allow="autoplay; fullscreen; picture-in-picture; encrypted-media";
-    iframe.allowFullscreen=true;
-    iframe.referrerPolicy="strict-origin-when-cross-origin";
-    iframe.style.cssText="display:block;width:100%;height:100%;border:0;background:#000;";
+    // Configuração especial do EmbedTV.
+    else if(
+      host==="embedtv.cc" ||
+      host.endsWith(".embedtv.cc")
+    ){
 
-    area.appendChild(iframe);
-    player=iframe;
+      // Isso não libera a interação por si só.
+      // A liberação depende da URL original da playlist.
+      endereco.searchParams.set("autoplay","1");
 
-    status.textContent=ehRDCanais
-      ?"Carregando player RDCanais: "+item.titulo
-      :"Carregando player externo: "+item.titulo;
+      url=endereco.toString();
+    }
 
-    iframe.addEventListener("load",()=>{
-      if(geracao!==geracaoPlayer)return;
+    // Restream e demais páginas externas.
+    else{
+      url=endereco.toString();
+    }
 
-      status.textContent=ehRDCanais
-        ?"Player RDCanais carregado: "+item.titulo
-        :"Página externa carregada. Se o vídeo não aparecer, o site pode bloquear a exibição em frame.";
+  }catch(erro){
 
-      if(ehRDCanais){
-        // O foco volta para a seta ▶ da tarja vermelha.
-        // Não alteramos o iframe: a reprodução continua normalmente.
-        setTimeout(()=>{
-          if(geracao!==geracaoPlayer)return;
-          try{
-            botaoProximoCanal.focus({preventScroll:true});
-          }catch(e){
-            try{botaoProximoCanal.focus();}catch(erro){}
-          }
-        },500);
-      }
-    });
+    status.textContent=
+      "Endereço externo inválido: "+erro.message;
 
-    iframe.addEventListener("error",()=>{
-      if(geracao===geracaoPlayer)status.textContent="Não foi possível carregar a página externa no frame.";
-    });
+    console.error("Erro no player externo:",erro);
 
     return;
   }
 
-  if(item.tipo==="restream"){
-    const iframe=document.createElement("iframe");
-    iframe.title=item.titulo||"Player Restream";
-    iframe.src=item.url;
-    iframe.allow="autoplay; fullscreen; picture-in-picture; encrypted-media";
-    iframe.allowFullscreen=true;
-    iframe.referrerPolicy="strict-origin-when-cross-origin";
-    iframe.style.cssText="display:block;width:100%;height:100%;border:0;background:#000;";
+  criarIframeExterno(
+    item,
+    geracao,
+    url,
+    urlOriginal
+  );
 
-    area.appendChild(iframe);
-    player=iframe;
-
-    status.textContent="Carregando transmissão Restream: "+item.titulo;
-
-    iframe.addEventListener("load",()=>{
-        if(geracao!==geracaoPlayer)return;
-
-        status.textContent="Player Restream carregado: "+item.titulo;
-
-        // Aguarda 1 segundo após carregar o Restream.
-        setTimeout(()=>{
-            if(geracao!==geracaoPlayer)return;
-
-            iframe.contentWindow.postMessage("mude=true","*");
-        },10000);
-    });
-
-    iframe.addEventListener("error",()=>{
-        if(geracao===geracaoPlayer)
-            status.textContent="Não foi possível carregar o player Restream.";
-    });
-
-    return;
+  return;
 }
-
   if(item.tipo==="hls"||/\.m3u8(?:$|[?#])/i.test(item.url)){
     const videoEl=document.createElement("video");
     videoEl.title=item.titulo;videoEl.controls=true;videoEl.autoplay=true;videoEl.playsInline=true;videoEl.preload="metadata";

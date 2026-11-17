@@ -590,6 +590,16 @@ async function resolverTransmissaoAoVivo(item){
   );
 }
 
+// Converte somente fluxos HTTP para o proxy gratuito hospedado no Render.
+// Links HTTPS continuam sendo carregados diretamente pelo HLS.js.
+function urlHLSParaReproducao(url){
+  const endereco=new URL(url,location.href);
+  if(endereco.protocol==="http:"){
+    return "https://player-http-online.onrender.com/proxy?url="+encodeURIComponent(endereco.href);
+  }
+  return endereco.href;
+}
+
 function criarPlayer(){
   if(!videos.length)return;
 
@@ -603,6 +613,30 @@ function criarPlayer(){
   if(ytPlayerApi){try{ytPlayerApi.destroy();}catch(e){}ytPlayerApi=null;}
   if(hlsInstance){try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
   area.replaceChildren();player=null;
+
+// Arquivos de referência M3U8 hospedados no GitHub (linksm3u8).
+// Busca o endereço atualizado e depois entrega ao player HLS.
+if(item.tipo==="m3u-ref"){
+  const urlArquivo=item.urlM3uRef||item.url;
+  status.textContent="Buscando transmissão atualizada: "+item.titulo+"...";
+  const consulta=new URL(urlArquivo);
+  consulta.searchParams.set("_",Date.now());
+  fetch(consulta.toString(),{cache:"no-store"})
+    .then(resposta=>{if(!resposta.ok)throw new Error("HTTP "+resposta.status);return resposta.text();})
+    .then(texto=>{
+      if(geracao!==geracaoPlayer)return;
+      const linhas=texto.replace(/^\uFEFF/,"").split(/\r?\n/).map(l=>l.trim()).filter(l=>l&&!l.startsWith("#"));
+      if(!linhas.length)throw new Error("O arquivo não contém endereço de transmissão.");
+      const linha=linhas.find(l=>/^https?:\/\//i.test(l)||!/^[a-z][a-z0-9+.-]*:/i.test(l));
+      if(!linha)throw new Error("Endereço HLS não encontrado.");
+      const hlsUrl=new URL(linha,urlArquivo);
+      if(!["http:","https:"].includes(hlsUrl.protocol))throw new Error("Protocolo inválido.");
+      item.urlM3uRef=urlArquivo;item.url=hlsUrl.href;item.tipo="hls";
+      criarPlayer();
+    })
+    .catch(erro=>{if(geracao!==geracaoPlayer)return;console.error("Erro no arquivo M3U8:",erro);status.textContent="Erro ao carregar "+item.titulo+": "+erro.message;});
+  return;
+}
 
 // PLAYERS EXTERNOS UNIFICADOS
 // Twitch, Restream, RDCanais, RedeCanais,
@@ -703,32 +737,53 @@ if(
 
   return;
 }
+  // Fluxos diretos de rádio/áudio.
+  if(item.tipo==="audio"){
+    const audioEl=document.createElement("audio");
+    audioEl.title=item.titulo;audioEl.controls=true;audioEl.autoplay=true;audioEl.preload="none";
+    audioEl.style.cssText="display:block;width:100%;max-width:900px;margin:auto;position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);";
+    area.appendChild(audioEl);player=audioEl;
+    audioEl.addEventListener("playing",()=>{status.textContent="Reproduzindo rádio: "+item.titulo;});
+    audioEl.addEventListener("error",()=>{status.textContent="Não foi possível reproduzir esta rádio. Verifique formato e acesso ao fluxo.";});
+    audioEl.src=item.url;audioEl.play().catch(()=>{status.textContent="Rádio carregada. Pressione Play para iniciar.";});
+    return;
+  }
+
   if(item.tipo==="hls"||/\.m3u8(?:$|[?#])/i.test(item.url)){
     const videoEl=document.createElement("video");
-    videoEl.title=item.titulo;videoEl.controls=true;videoEl.autoplay=true;videoEl.playsInline=true;videoEl.preload="metadata";
+    videoEl.title=item.titulo;videoEl.controls=false;videoEl.autoplay=true;videoEl.playsInline=true;videoEl.preload="auto";videoEl.tabIndex=0;
+    videoEl.setAttribute("playsinline","");videoEl.setAttribute("webkit-playsinline","");
+    videoEl.addEventListener("click",()=>{if(videoEl.paused)videoEl.play().catch(e=>console.warn(e));else videoEl.pause();});
+    videoEl.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();if(videoEl.paused)videoEl.play().catch(err=>console.warn(err));else videoEl.pause();}});
     videoEl.style.cssText="display:block;width:100%;height:100%;object-fit:contain;background:#000;";
     area.appendChild(videoEl);player=videoEl;
-    videoEl.addEventListener("error",()=>{
-      const e=videoEl.error;console.error("Erro do elemento de vídeo:",{code:e?.code,message:e?.message,url:item.url});
-      if(e)status.textContent="Erro no vídeo (código "+e.code+").";
-    });
+    videoEl.addEventListener("playing",()=>{if(geracao===geracaoPlayer)status.textContent="Reproduzindo transmissão: "+item.titulo;});
+    videoEl.addEventListener("waiting",()=>{if(geracao===geracaoPlayer)status.textContent="Aguardando dados da transmissão…";});
+    videoEl.addEventListener("stalled",()=>{if(geracao===geracaoPlayer)status.textContent="Conexão instável. Aguardando transmissão…";});
+    videoEl.addEventListener("error",()=>{if(geracao!==geracaoPlayer)return;const e=videoEl.error;console.error("Erro do vídeo:",{code:e?.code,message:e?.message,url:item.url});if(e)status.textContent="O navegador não conseguiu decodificar o vídeo (código "+e.code+").";});
+    const urlReproducao=urlHLSParaReproducao(item.url);
     if(window.Hls&&Hls.isSupported()){
-      hlsInstance=new Hls({enableWorker:true,lowLatencyMode:false,backBufferLength:30,manifestLoadingTimeOut:20000,manifestLoadingMaxRetry:3,manifestLoadingRetryDelay:1000,levelLoadingTimeOut:20000,fragLoadingTimeOut:30000,fragLoadingMaxRetry:4,fragLoadingRetryDelay:1000});
-      hlsInstance.on(Hls.Events.MANIFEST_PARSED,()=>{
-        videoEl.play().then(()=>{status.textContent="Transmissão HLS reproduzindo.";}).catch(()=>{status.textContent="Transmissão carregada. Pressione Play no vídeo.";});
+      const hls=new Hls({
+        enableWorker:true,lowLatencyMode:true,liveSyncDurationCount:3,liveMaxLatencyDurationCount:10,liveDurationInfinity:true,highBufferWatchdogPeriod:2,
+        backBufferLength:60,maxBufferLength:30,maxMaxBufferLength:60,startFragPrefetch:true,
+        manifestLoadingTimeOut:10000,manifestLoadingMaxRetry:4,manifestLoadingRetryDelay:1000,manifestLoadingMaxRetryTimeout:10000,
+        levelLoadingTimeOut:10000,levelLoadingMaxRetry:4,levelLoadingRetryDelay:1000,
+        fragLoadingTimeOut:20000,fragLoadingMaxRetry:6,fragLoadingRetryDelay:1000,fragLoadingMaxRetryTimeout:12000
       });
-      let rede=false,midia=false;
-      hlsInstance.on(Hls.Events.ERROR,(_event,data)=>{
-        console.error("Erro HLS:",data);
+      hlsInstance=hls;let recuperacoesRede=0,recuperacoesMidia=0,encerrado=false;
+      hls.on(Hls.Events.MANIFEST_PARSED,()=>{if(geracao!==geracaoPlayer)return;status.textContent="Lista HLS carregada. Iniciando transmissão…";videoEl.play().catch(erro=>{console.warn("Autoplay bloqueado:",erro);status.textContent="Transmissão carregada. Pressione Play no vídeo.";});});
+      hls.on(Hls.Events.ERROR,(_event,data)=>{
+        if(geracao!==geracaoPlayer||encerrado)return;
+        console.error("Diagnóstico HLS:",{tipo:data.type,detalhe:data.details,fatal:data.fatal,statusHTTP:data.response?.code,url:data.response?.url,erro:data.error});
         if(!data.fatal)return;
         registrarFalha(item,"M3U8/HLS",data.details||data.error?.message||"Erro HLS fatal",data.response?.code||data.details||"");
-        if(data.type===Hls.ErrorTypes.NETWORK_ERROR&&!rede){rede=true;hlsInstance.startLoad();}
-        else if(data.type===Hls.ErrorTypes.MEDIA_ERROR&&!midia){midia=true;hlsInstance.recoverMediaError();}
-        else{status.textContent="Falha HLS: "+data.details;try{hlsInstance.destroy();}catch(e){}hlsInstance=null;}
+        if(data.type===Hls.ErrorTypes.NETWORK_ERROR&&recuperacoesRede<3){recuperacoesRede++;status.textContent="Falha temporária de rede. Tentando reconectar ("+recuperacoesRede+"/3)…";setTimeout(()=>{if(geracao===geracaoPlayer&&hlsInstance===hls)hls.startLoad();},1500*recuperacoesRede);return;}
+        if(data.type===Hls.ErrorTypes.MEDIA_ERROR&&recuperacoesMidia<2){recuperacoesMidia++;status.textContent="Recuperando o decodificador de vídeo…";hls.recoverMediaError();return;}
+        encerrado=true;status.textContent="Não foi possível reproduzir este M3U8 neste navegador. Consulte o diagnóstico no console (F12).";try{hls.destroy();}catch(e){}if(hlsInstance===hls)hlsInstance=null;
       });
-      hlsInstance.loadSource(item.url);hlsInstance.attachMedia(videoEl);
-    }else if(videoEl.canPlayType("application/vnd.apple.mpegurl")){
-      videoEl.src=item.url;videoEl.play().catch(()=>{status.textContent="Transmissão carregada. Pressione Play no vídeo.";});
+      hls.loadSource(urlReproducao);hls.attachMedia(videoEl);
+    }else if(videoEl.canPlayType("application/vnd.apple.mpegurl")||videoEl.canPlayType("application/x-mpegURL")){
+      videoEl.src=urlReproducao;videoEl.addEventListener("loadedmetadata",()=>{if(geracao!==geracaoPlayer)return;videoEl.play().catch(erro=>{console.warn("Autoplay HLS nativo bloqueado:",erro);status.textContent="Transmissão carregada. Pressione Play para iniciar.";});},{once:true});
     }else status.textContent="Este navegador não oferece suporte à reprodução HLS.";
     return;
   }
@@ -796,17 +851,18 @@ function processarLista(texto){
     let tipo="desconhecido";
     try{
       const host=new URL(url).hostname.toLowerCase();
-      if(host==="player.twitch.tv"||host==="twitch.tv"||host==="www.twitch.tv")tipo="twitch";
+      if(/raw\.githubusercontent\.com\/edifesf1\/r\/main\/linksm3u8\/[^/?#]+\.m3u8(?:$|[?#])/i.test(url))tipo="m3u-ref";
+      else if(host==="player.twitch.tv"||host==="twitch.tv"||host==="www.twitch.tv")tipo="twitch";
       else if(host==="restream.io"||host.endsWith(".restream.io"))tipo="restream";
-      // O endereço do m3u8player.org é uma página externa, mesmo quando
-      // contém um link .m3u8 dentro do parâmetro ?url=.
+      // Players externos continuam sendo páginas, não fluxos HLS diretos.
       else if(host==="m3u8player.org"||host.endsWith(".m3u8player.org"))tipo="frame";
       else if(/\.m3u8(?:$|[?#])/i.test(url))tipo="hls";
       else if(handle)tipo="youtube-channel";
       else if(id)tipo="youtube";
+      else if(/(?:\.mp3|\.aac|\.m4a|\.ogg|\.opus|\.wav|\.flac|\.m3u|\.pls)(?:$|[?#])/i.test(url)||/\/stream(?:\/|$|[?#])/i.test(new URL(url).pathname+new URL(url).search))tipo="audio";
       else if(url.startsWith("https://")||url.startsWith("http://"))tipo="frame";
     }catch(e){}
-    if(tipo==="hls"||tipo==="restream"||tipo==="twitch"||tipo==="frame")return{tema,categoria,classificacao,titulo,id:null,url,tipo};
+    if(tipo==="hls"||tipo==="m3u-ref"||tipo==="audio"||tipo==="restream"||tipo==="twitch"||tipo==="frame")return{tema,categoria,classificacao,titulo,id:null,url,tipo,urlM3uRef:tipo==="m3u-ref"?url:null};
     if(tipo==="youtube-channel")return{tema,categoria,classificacao,titulo,id:null,url,tipo,handle};
     return tipo==="youtube"?{tema,categoria,classificacao,titulo,id,url,tipo}:null;
   }).filter(Boolean);

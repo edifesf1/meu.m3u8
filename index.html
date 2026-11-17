@@ -851,7 +851,11 @@ function processarLista(texto){
     let tipo="desconhecido";
     try{
       const host=new URL(url).hostname.toLowerCase();
-      if(/raw\.githubusercontent\.com\/edifesf1\/r\/main\/linksm3u8\/[^/?#]+\.m3u8(?:$|[?#])/i.test(url))tipo="m3u-ref";
+      // URLs completas do player-http-online devem abrir como iframe externo.
+      // Assim, somente os canais cadastrados explicitamente com o endereço do Render
+      // passam por ele; arquivos GitHub e HLS diretos mantêm o fluxo atual.
+      if(host==="player-http-online.onrender.com")tipo="frame";
+      else if(/raw\.githubusercontent\.com\/edifesf1\/r\/main\/linksm3u8\/[^/?#]+\.m3u8(?:$|[?#])/i.test(url))tipo="m3u-ref";
       else if(host==="player.twitch.tv"||host==="twitch.tv"||host==="www.twitch.tv")tipo="twitch";
       else if(host==="restream.io"||host.endsWith(".restream.io"))tipo="restream";
       // Players externos continuam sendo páginas, não fluxos HLS diretos.

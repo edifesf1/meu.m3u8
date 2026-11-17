@@ -272,7 +272,16 @@ function criarIframeExterno(item,geracao,urlFinal,urlOriginal){
   const area=document.getElementById("player");
   const iframe=document.createElement("iframe");
 
-  const liberarClique=temAutoplayLiberado(urlOriginal);
+  // O M3U8Player precisa manter os controles internos acessíveis.
+  // A exceção vale somente para m3u8player.org; os demais iframes
+  // continuam usando a regra original de bloqueio/interação.
+  let liberarClique=temAutoplayLiberado(urlOriginal);
+  try{
+    const hostOriginal=new URL(urlOriginal).hostname.toLowerCase();
+    if(hostOriginal==="m3u8player.org"||hostOriginal.endsWith(".m3u8player.org")){
+      liberarClique=true;
+    }
+  }catch(e){}
 
   iframe.title=item.titulo||"Player externo";
   iframe.src=urlFinal;

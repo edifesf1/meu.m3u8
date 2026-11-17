@@ -798,6 +798,9 @@ function processarLista(texto){
       const host=new URL(url).hostname.toLowerCase();
       if(host==="player.twitch.tv"||host==="twitch.tv"||host==="www.twitch.tv")tipo="twitch";
       else if(host==="restream.io"||host.endsWith(".restream.io"))tipo="restream";
+      // O endereço do m3u8player.org é uma página externa, mesmo quando
+      // contém um link .m3u8 dentro do parâmetro ?url=.
+      else if(host==="m3u8player.org"||host.endsWith(".m3u8player.org"))tipo="frame";
       else if(/\.m3u8(?:$|[?#])/i.test(url))tipo="hls";
       else if(handle)tipo="youtube-channel";
       else if(id)tipo="youtube";

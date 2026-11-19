@@ -590,14 +590,10 @@ async function resolverTransmissaoAoVivo(item){
   );
 }
 
-// Converte somente fluxos HTTP para o proxy gratuito hospedado no Render.
-// Links HTTPS continuam sendo carregados diretamente pelo HLS.js.
+// TESTE: tenta reproduzir todos os fluxos HLS diretamente da fonte original.
+// Não encaminha HTTP pelo Render nem por outro proxy.
 function urlHLSParaReproducao(url){
-  const endereco=new URL(url,location.href);
-  if(endereco.protocol==="http:"){
-    return "https://player-http-online.onrender.com/proxy?url="+encodeURIComponent(endereco.href);
-  }
-  return endereco.href;
+  return new URL(url,location.href).href;
 }
 
 function criarPlayer(){

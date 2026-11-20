@@ -277,8 +277,16 @@ function criarIframeExterno(item,geracao,urlFinal,urlOriginal){
   // continuam usando a regra original de bloqueio/interação.
   let liberarClique=temAutoplayLiberado(urlOriginal);
   try{
-    const hostOriginal=new URL(urlOriginal).hostname.toLowerCase();
-    if(hostOriginal==="m3u8player.org"||hostOriginal.endsWith(".m3u8player.org")){
+    const enderecoOriginal=new URL(urlOriginal);
+    const hostOriginal=enderecoOriginal.hostname.toLowerCase();
+
+    // O player hospedado em edifesf1.github.io/s deve receber
+    // os cliques normalmente quando aberto dentro deste iframe.
+    if(
+      (hostOriginal==="edifesf1.github.io" && /^\/s\/?$/i.test(enderecoOriginal.pathname)) ||
+      hostOriginal==="m3u8player.org" ||
+      hostOriginal.endsWith(".m3u8player.org")
+    ){
       liberarClique=true;
     }
   }catch(e){}
@@ -844,9 +852,21 @@ function montarPlayerYouTube(item,videoId,geracao,area){
 
 function processarLista(texto){
   todosVideos=texto.split(/\r?\n/).map(l=>l.trim()).filter(l=>l&&!l.startsWith("#")).map((linha,indice)=>{
-    const partes=linha.split("|").map(p=>p.trim());
+    let partes=linha.split("|").map(p=>p.trim());
+
+    // Algumas playlists usam uma barra inicial como separador:
+    // |Canal |Normal |Teste2 |URL
+    // Nesse formato, os três campos de identificação são preservados
+    // e o último campo é o endereço completo.
+    if(partes.length && partes[0]==="")partes=partes.slice(1);
+
     let tema,categoria,classificacao,titulo,url;
     if(partes.length>=5){[tema,categoria,classificacao,titulo]=partes;url=partes.slice(4).join("|").trim();}
+    else if(partes.length===4){
+      [tema,categoria,classificacao]=partes;
+      titulo=classificacao||"Vídeo "+(indice+1);
+      url=partes[3];
+    }
     else if(partes.length>=3){
       const temaAntigo=partes[0]||"Geral";titulo=partes[1]||"Vídeo "+(indice+1);url=partes.slice(2).join("|").trim();
       tema=/bíblic|preg|igreja|relig|estudo/i.test(temaAntigo+" "+titulo)?"religioso":"normal";
@@ -859,11 +879,15 @@ function processarLista(texto){
     const handle=extrairHandleCanal(url);
     let tipo="desconhecido";
     try{
-      const host=new URL(url).hostname.toLowerCase();
+      const endereco=new URL(url);
+      const host=endereco.hostname.toLowerCase();
+      // A página do player edifesf1.github.io/s deve abrir em iframe,
+      // mantendo o conteúdo que vem depois do # sem tratá-lo como HLS direto.
+      if(host==="edifesf1.github.io" && /^\/s\/?$/i.test(endereco.pathname))tipo="frame";
       // URLs completas do player-http-online devem abrir como iframe externo.
       // Assim, somente os canais cadastrados explicitamente com o endereço do Render
       // passam por ele; arquivos GitHub e HLS diretos mantêm o fluxo atual.
-      if(host==="player-http-online.onrender.com")tipo="frame";
+      else if(host==="player-http-online.onrender.com")tipo="frame";
       else if(/raw\.githubusercontent\.com\/edifesf1\/r\/main\/linksm3u8\/[^/?#]+\.m3u8(?:$|[?#])/i.test(url))tipo="m3u-ref";
       else if(host==="player.twitch.tv"||host==="twitch.tv"||host==="www.twitch.tv")tipo="twitch";
       else if(host==="restream.io"||host.endsWith(".restream.io"))tipo="restream";

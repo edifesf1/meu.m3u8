@@ -758,7 +758,22 @@ if(
     videoEl.addEventListener("stalled",()=>{if(geracao===geracaoPlayer)status.textContent="Conexão instável. Aguardando transmissão…";});
     videoEl.addEventListener("error",()=>{if(geracao!==geracaoPlayer)return;const e=videoEl.error;console.error("Erro do vídeo:",{code:e?.code,message:e?.message,url:item.url});if(e)status.textContent="O navegador não conseguiu decodificar o vídeo (código "+e.code+").";});
     const urlReproducao=urlHLSParaReproducao(item.url);
-    if(window.Hls&&Hls.isSupported()){
+    const suporteHLSNativo =
+      videoEl.canPlayType("application/vnd.apple.mpegurl") ||
+      videoEl.canPlayType("application/x-mpegURL");
+
+    // Primeiro tenta o HLS nativo do navegador.
+    // Se não houver suporte nativo, mantém o HLS.js como alternativa.
+    if(suporteHLSNativo){
+      videoEl.src=urlReproducao;
+      videoEl.addEventListener("loadedmetadata",()=>{
+        if(geracao!==geracaoPlayer)return;
+        videoEl.play().catch(erro=>{
+          console.warn("Autoplay HLS nativo bloqueado:",erro);
+          status.textContent="Transmissão carregada. Pressione Play para iniciar.";
+        });
+      },{once:true});
+    }else if(window.Hls&&Hls.isSupported()){
       const hls=new Hls({
         enableWorker:true,lowLatencyMode:true,liveSyncDurationCount:3,liveMaxLatencyDurationCount:10,liveDurationInfinity:true,highBufferWatchdogPeriod:2,
         backBufferLength:60,maxBufferLength:30,maxMaxBufferLength:60,startFragPrefetch:true,
@@ -778,8 +793,6 @@ if(
         encerrado=true;status.textContent="Não foi possível reproduzir este M3U8 neste navegador. Consulte o diagnóstico no console (F12).";try{hls.destroy();}catch(e){}if(hlsInstance===hls)hlsInstance=null;
       });
       hls.loadSource(urlReproducao);hls.attachMedia(videoEl);
-    }else if(videoEl.canPlayType("application/vnd.apple.mpegurl")||videoEl.canPlayType("application/x-mpegURL")){
-      videoEl.src=urlReproducao;videoEl.addEventListener("loadedmetadata",()=>{if(geracao!==geracaoPlayer)return;videoEl.play().catch(erro=>{console.warn("Autoplay HLS nativo bloqueado:",erro);status.textContent="Transmissão carregada. Pressione Play para iniciar.";});},{once:true});
     }else status.textContent="Este navegador não oferece suporte à reprodução HLS.";
     return;
   }
